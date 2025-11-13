@@ -23,6 +23,35 @@ module.exports = async (req, res) => {
     const app = express();
     app.use(cors());
     app.use(express.json());
+    
+    // Middleware pour normaliser le chemin : retirer /api si présent
+    // Quand Vercel fait un rewrite vers cette fonction, req.url contient déjà /api/...
+    // Il faut l'enlever pour que les routes Express fonctionnent correctement
+    app.use((req, res, next) => {
+      const originalUrl = req.url;
+      
+      // Normaliser req.url en retirant /api
+      if (req.url.startsWith('/api/')) {
+        req.url = req.url.replace('/api', '');
+      } else if (req.url === '/api' || req.url === '/api/') {
+        req.url = '/';
+      }
+      
+      // Si le chemin est vide, utiliser /
+      if (!req.url || req.url === '') {
+        req.url = '/';
+      }
+      
+      // Note: req.path est recalculé automatiquement par Express à partir de req.url
+      console.log('📡 Requête API:', {
+        originalUrl,
+        normalizedUrl: req.url,
+        path: req.path, // Sera recalculé automatiquement
+        method: req.method
+      });
+      
+      next();
+    });
 
     // Importer les routes et le contenu
     const siteContent = require('../backend/src/data/siteContent');
