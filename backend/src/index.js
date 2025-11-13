@@ -228,13 +228,19 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 
 // Écouter sur toutes les interfaces réseau (0.0.0.0) pour être accessible depuis d'autres machines
-const HOST = process.env.HOST || "0.0.0.0";
+// Mais seulement si on n'est pas sur Vercel (serverless)
+if (process.env.VERCEL !== "1") {
+  const HOST = process.env.HOST || "0.0.0.0";
+  
+  app.listen(PORT, HOST, () => {
+    console.log(`🚀 CAJJ API ready on http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}`);
+    console.log(`📡 Accessible depuis le réseau local sur le port ${PORT}`);
+    console.log(`💡 Pour accéder depuis un autre appareil, utilisez: http://[VOTRE_IP]:${PORT}`);
+  });
+}
 
-app.listen(PORT, HOST, () => {
-  console.log(`🚀 CAJJ API ready on http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}`);
-  console.log(`📡 Accessible depuis le réseau local sur le port ${PORT}`);
-  console.log(`💡 Pour accéder depuis un autre appareil, utilisez: http://[VOTRE_IP]:${PORT}`);
-});
+// Export pour Vercel serverless functions
+module.exports = app;
 
 
 
