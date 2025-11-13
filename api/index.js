@@ -46,6 +46,7 @@ app.use("/uploads", express.static(uploadsPath, {
 }));
 
 // Routes publiques
+// Note: Vercel route déjà /api/* vers ce handler, donc les routes ici sont relatives à /api
 app.get("/", (_req, res) => {
   res.json({
     name: siteContent.info.name,
@@ -53,22 +54,15 @@ app.get("/", (_req, res) => {
   });
 });
 
-app.get("/api", (_req, res) => {
-  res.json({
-    name: siteContent.info.name,
-    message: "API CAJJ opérationnelle",
-  });
-});
-
-app.get("/api/about", (_req, res) => {
+app.get("/about", (_req, res) => {
   res.json(siteContent.about || { sections: [] });
 });
 
-app.get("/api/actions", (_req, res) => {
+app.get("/actions", (_req, res) => {
   res.json(siteContent.actions);
 });
 
-app.get("/api/publications", (_req, res) => {
+app.get("/publications", (_req, res) => {
   const publications = {
     cajj: (siteContent.publications?.cajj || []).filter((item) => item.visible !== false),
     partners: (siteContent.publications?.partners || []).filter((item) => item.visible !== false),
@@ -76,13 +70,13 @@ app.get("/api/publications", (_req, res) => {
   res.json(publications);
 });
 
-app.get("/api/news", (_req, res) => {
+app.get("/news", (_req, res) => {
   const allNews = siteContent.news || [];
   const visibleNews = allNews.filter((item) => item.visible !== false);
   res.json(visibleNews);
 });
 
-app.get("/api/gallery", (_req, res) => {
+app.get("/gallery", (_req, res) => {
   const allPhotos = siteContent.gallery?.photos || [];
   const allVideos = siteContent.gallery?.videos || [];
   const visiblePhotos = allPhotos.filter((item) => item.visible !== false);
@@ -95,7 +89,7 @@ app.get("/api/gallery", (_req, res) => {
   res.json(gallery);
 });
 
-app.post("/api/contact", (req, res) => {
+app.post("/contact", (req, res) => {
   const { name, email, message } = req.body;
   if (!name || !email || !message) {
     return res.status(400).json({ error: "Les champs nom, email et message sont requis." });
@@ -107,9 +101,9 @@ app.post("/api/contact", (req, res) => {
 });
 
 // Routes d'authentification et d'administration
-// Note: Ces routes sont déjà préfixées avec /api/auth et /api/admin dans les fichiers de routes
-app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
+// Vercel route /api/* vers ce handler, donc /api/auth devient /auth ici
+app.use("/auth", authRoutes);
+app.use("/admin", adminRoutes);
 
 // Export pour Vercel (handler serverless)
 module.exports = app;
