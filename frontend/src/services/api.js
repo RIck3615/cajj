@@ -12,10 +12,17 @@ function getApiUrl() {
   
   // Si on est en production (vercel, netlify, etc.)
   if (currentUrl.includes("vercel.app") || currentUrl.includes("netlify.app") || currentUrl.includes("github.io")) {
-    // En production, utiliser l'URL du backend déployé
-    // Vous devrez configurer VITE_API_URL dans Vercel
-    console.warn("⚠️ VITE_API_URL n'est pas configuré. Configurez-le dans les variables d'environnement de votre plateforme de déploiement.");
-    return "http://localhost:4000"; // Fallback
+    // Si VITE_API_URL est configuré, l'utiliser (backend déployé séparément)
+    if (import.meta.env.VITE_API_URL) {
+      return import.meta.env.VITE_API_URL;
+    }
+    
+    // Sinon, utiliser l'API relative (backend sur le même domaine Vercel)
+    // Le vercel.json route /api/* vers le backend
+    const relativeApiUrl = `${currentUrl}/api`;
+    console.warn("⚠️ VITE_API_URL n'est pas configuré. Utilisation de l'API relative:", relativeApiUrl);
+    console.warn("💡 Pour un backend séparé, configurez VITE_API_URL dans Vercel (Settings > Environment Variables)");
+    return relativeApiUrl;
   }
 
   // 3. Si on est en développement local

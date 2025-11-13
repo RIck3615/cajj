@@ -144,7 +144,16 @@ app.get("/api/test-file/:type/:filename", (req, res) => {
   }
 });
 
+// Route racine
 app.get("/", (_req, res) => {
+  res.json({
+    name: siteContent.info.name,
+    message: "API CAJJ opérationnelle",
+  });
+});
+
+// Route de santé pour Vercel
+app.get("/api", (_req, res) => {
   res.json({
     name: siteContent.info.name,
     message: "API CAJJ opérationnelle",
