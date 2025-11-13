@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LogIn, Lock } from "lucide-react";
@@ -14,6 +14,12 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Debug: afficher l'URL de l'API au chargement
+  useEffect(() => {
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+    console.log("🔗 URL API configurée:", API_URL);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -23,7 +29,10 @@ const AdminLogin = () => {
       await login(username, password);
       navigate("/admin");
     } catch (err) {
-      setError(err.response?.data?.error || "Erreur de connexion");
+      // Gérer les erreurs de manière plus claire
+      const errorMessage = err.message || err.response?.data?.message || err.response?.data?.error || "Erreur de connexion";
+      setError(errorMessage);
+      console.error("Erreur de connexion:", err);
     } finally {
       setLoading(false);
     }
@@ -56,7 +65,11 @@ const AdminLogin = () => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  className="w-full rounded-md border border-input bg-background px-3 py-3 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder="Entrez votre nom d'utilisateur"
                   required
                 />
               </div>
@@ -69,14 +82,16 @@ const AdminLogin = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  autoComplete="current-password"
+                  className="w-full rounded-md border border-input bg-background px-3 py-3 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder="Entrez votre mot de passe"
                   required
                 />
               </div>
               {error && (
                 <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
               )}
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full py-3 text-base" disabled={loading}>
                 <LogIn className="mr-2 h-4 w-4" />
                 {loading ? "Connexion..." : "Se connecter"}
               </Button>
