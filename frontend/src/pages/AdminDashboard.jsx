@@ -41,7 +41,7 @@ import {
   updateAboutSection,
 } from "@/services/admin";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+import { API_URL } from "@/services/api";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();

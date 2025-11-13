@@ -6,9 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { fadeUp } from "@/lib/animations";
-import api from "@/services/api";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+import api, { API_URL } from "@/services/api";
 
 const Galerie = () => {
   const [gallery, setGallery] = useState({ photos: [], videos: [] });

@@ -6,6 +6,7 @@ import { LogIn, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { login } from "@/services/auth";
+import { API_URL } from "@/services/api";
 
 const AdminLogin = () => {
   const [username, setUsername] = useState("");
@@ -14,10 +15,21 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Debug: afficher l'URL de l'API au chargement
+  // Vérifier la connexion au backend au chargement
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
-    console.log("🔗 URL API configurée:", API_URL);
+    console.log("🔗 URL API détectée:", API_URL);
+    console.log("📍 URL actuelle du frontend:", window.location.origin);
+    
+    // Tester la connexion au backend
+    fetch(`${API_URL}/`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("✅ Backend accessible:", data);
+      })
+      .catch((err) => {
+        console.error("❌ Backend inaccessible:", err);
+        // Ne pas afficher l'erreur immédiatement, seulement si l'utilisateur essaie de se connecter
+      });
   }, []);
 
   const handleSubmit = async (e) => {

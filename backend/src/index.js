@@ -218,8 +218,13 @@ app.use("/api/auth", authRoutes);
 // Routes d'administration
 app.use("/api/admin", adminRoutes);
 
-app.listen(PORT, () => {
-  console.log(`CAJJ API ready on port ${PORT}`);
+// Écouter sur toutes les interfaces réseau (0.0.0.0) pour être accessible depuis d'autres machines
+const HOST = process.env.HOST || "0.0.0.0";
+
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 CAJJ API ready on http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}`);
+  console.log(`📡 Accessible depuis le réseau local sur le port ${PORT}`);
+  console.log(`💡 Pour accéder depuis un autre appareil, utilisez: http://[VOTRE_IP]:${PORT}`);
 });
 
 
