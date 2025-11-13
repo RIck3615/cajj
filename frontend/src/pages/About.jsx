@@ -1,11 +1,32 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { aboutSections } from "@/data/staticContent";
 import { fadeUp } from "@/lib/animations";
+import api from "@/services/api";
 
 const About = () => {
+  const [aboutSections, setAboutSections] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAbout = async () => {
+      try {
+        const response = await api.get("/api/about");
+        console.log("Section 'Nous connaître' chargée:", response.data);
+        setAboutSections(response.data.sections || []);
+      } catch (error) {
+        console.error("Erreur lors du chargement de la section 'Nous connaître':", error);
+        console.error("Détails:", error.response?.data || error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAbout();
+  }, []);
+
   return (
     <motion.section
       className="container space-y-12 pb-16 pt-8 md:pt-12"
@@ -43,28 +64,34 @@ const About = () => {
         </figcaption>
       </motion.figure>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {aboutSections.map((section, index) => (
-          <motion.div
-            key={section.id}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.4, delay: index * 0.08 }}
-          >
-            <Card className="h-full border-border/60 bg-card/80 backdrop-blur">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-primary">
-                  {section.title}
-                </CardTitle>
-                <CardDescription className="text-sm text-muted-foreground">
-                  {section.content}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+      {loading ? (
+        <div className="text-center text-muted-foreground py-8">Chargement...</div>
+      ) : aboutSections.length === 0 ? (
+        <div className="text-center text-muted-foreground py-8">Aucune section disponible.</div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {aboutSections.map((section, index) => (
+            <motion.div
+              key={section.id}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.4, delay: index * 0.08 }}
+            >
+              <Card className="h-full border-border/60 bg-card/80 backdrop-blur">
+                <CardHeader>
+                  <CardTitle className="text-xl font-semibold text-primary">
+                    {section.title}
+                  </CardTitle>
+                  <CardDescription className="text-sm text-muted-foreground whitespace-pre-line">
+                    {section.content}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.section>
   );
 };

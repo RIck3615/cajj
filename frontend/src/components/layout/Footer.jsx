@@ -18,9 +18,9 @@ const Footer = () => {
             <Mail className="h-5 w-5" />
             info@cajj-asbl.org
           </a>
-          <a href="tel:+243000000000" className="flex items-center justify-center gap-2 md:justify-start">
+          <a href="tel:+243991303434" className="flex items-center justify-center gap-2 md:justify-start">
             <Phone className="h-5 w-5" />
-            +243 000 000 000
+            +243 991 303 434
           </a>
         </div>
         <div className="flex flex-col items-center gap-1 text-xs text-primary-foreground/70 md:items-end">
