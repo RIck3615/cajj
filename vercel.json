@@ -20,17 +20,16 @@
       }
     }
   ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    }
-  ],
   "rewrites": [
     {
-      "source": "/((?!api).*)",
+      "source": "/api/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
 }
+
 
