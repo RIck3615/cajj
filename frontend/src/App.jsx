@@ -7,6 +7,9 @@ import Interventions from "@/pages/Interventions";
 import Publications from "@/pages/Publications";
 import Actualite from "@/pages/Actualite";
 import Galerie from "@/pages/Galerie";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminDashboard from "@/pages/AdminDashboard";
+import ProtectedRoute from "@/components/admin/ProtectedRoute";
 
 function App() {
   return (
@@ -19,6 +22,15 @@ function App() {
         <Route path="/actualite" element={<Actualite />} />
         <Route path="/galerie" element={<Galerie />} />
       </Route>
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

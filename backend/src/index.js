@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const siteContent = require("./data/siteContent");
+const authRoutes = require("./routes/auth");
+const adminRoutes = require("./routes/admin");
 
 const PORT = process.env.PORT || 4000;
 
@@ -8,6 +11,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Servir les fichiers uploadés
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.get("/", (_req, res) => {
   res.json({
@@ -56,6 +62,12 @@ app.post("/api/contact", (req, res) => {
     },
   });
 });
+
+// Routes d'authentification
+app.use("/api/auth", authRoutes);
+
+// Routes d'administration
+app.use("/api/admin", adminRoutes);
 
 app.listen(PORT, () => {
   console.log(`CAJJ API ready on port ${PORT}`);
