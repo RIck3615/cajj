@@ -26,7 +26,7 @@
       "destination": "/api/index"
     },
     {
-      "source": "/((?!api|assets|.*\\.[a-z0-9]+$).*)",
+      "source": "/((?!api|_next|assets|.*\\.[a-z0-9]+$).*)",
       "destination": "/index.html"
     }
   ]
