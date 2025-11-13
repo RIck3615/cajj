@@ -13,6 +13,7 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [backendStatus, setBackendStatus] = useState("checking"); // "checking", "online", "offline"
   const navigate = useNavigate();
 
   // Vérifier la connexion au backend au chargement
@@ -21,14 +22,25 @@ const AdminLogin = () => {
     console.log("📍 URL actuelle du frontend:", window.location.origin);
     
     // Tester la connexion au backend
-    fetch(`${API_URL}/`)
-      .then((res) => res.json())
+    setBackendStatus("checking");
+    fetch(`${API_URL}/`, { 
+      method: "GET",
+      mode: "cors",
+      cache: "no-cache"
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+        throw new Error("Réponse non OK");
+      })
       .then((data) => {
         console.log("✅ Backend accessible:", data);
+        setBackendStatus("online");
       })
       .catch((err) => {
         console.error("❌ Backend inaccessible:", err);
-        // Ne pas afficher l'erreur immédiatement, seulement si l'utilisateur essaie de se connecter
+        setBackendStatus("offline");
       });
   }, []);
 
@@ -42,9 +54,16 @@ const AdminLogin = () => {
       navigate("/admin");
     } catch (err) {
       // Gérer les erreurs de manière plus claire
-      const errorMessage = err.message || err.response?.data?.message || err.response?.data?.error || "Erreur de connexion";
+      let errorMessage = err.message || err.response?.data?.message || err.response?.data?.error || "Erreur de connexion";
+      
+      // Afficher l'URL de l'API dans l'erreur pour aider au diagnostic
+      if (errorMessage.includes("Impossible de contacter")) {
+        errorMessage += `\n\nURL API utilisée: ${API_URL}`;
+      }
+      
       setError(errorMessage);
       console.error("Erreur de connexion:", err);
+      console.error("URL API:", API_URL);
     } finally {
       setLoading(false);
     }
@@ -65,6 +84,25 @@ const AdminLogin = () => {
             </div>
             <CardTitle className="text-2xl font-bold">Espace Administrateur</CardTitle>
             <p className="text-sm text-muted-foreground">Connectez-vous pour gérer le contenu du site</p>
+            
+            {/* Indicateur de statut du backend */}
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs">
+              {backendStatus === "checking" && (
+                <span className="text-muted-foreground">Vérification de la connexion...</span>
+              )}
+              {backendStatus === "online" && (
+                <span className="flex items-center gap-1 text-green-600">
+                  <span className="h-2 w-2 rounded-full bg-green-600"></span>
+                  Backend connecté ({API_URL})
+                </span>
+              )}
+              {backendStatus === "offline" && (
+                <span className="flex items-center gap-1 text-destructive">
+                  <span className="h-2 w-2 rounded-full bg-destructive"></span>
+                  Backend inaccessible ({API_URL})
+                </span>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,9 +138,20 @@ const AdminLogin = () => {
                   required
                 />
               </div>
-              {error && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
-              )}
+                  {error && (
+                    <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-line">
+                      <div className="font-semibold mb-2">❌ Erreur de connexion</div>
+                      <div>{error}</div>
+                      <div className="mt-3 pt-3 border-t border-destructive/20 text-xs">
+                        <div className="font-semibold mb-1">💡 Solutions possibles :</div>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li>Vérifiez que le backend est démarré : <code className="bg-destructive/20 px-1 rounded">cd backend && npm run dev</code></li>
+                          <li>Vérifiez l'URL de l'API dans la console (F12)</li>
+                          <li>Si vous êtes sur un autre ordinateur, créez <code className="bg-destructive/20 px-1 rounded">frontend/.env</code> avec <code className="bg-destructive/20 px-1 rounded">VITE_API_URL=http://[IP]:4000</code></li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
               <Button type="submit" className="w-full py-3 text-base" disabled={loading}>
                 <LogIn className="mr-2 h-4 w-4" />
                 {loading ? "Connexion..." : "Se connecter"}

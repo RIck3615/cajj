@@ -33,7 +33,13 @@ function getApiUrl() {
 
 const API_URL = getApiUrl();
 
+// Logs de diagnostic détaillés
+console.group("🔗 Configuration API");
+console.log("📍 URL actuelle du frontend:", window.location.origin);
+console.log("🌐 Hostname:", window.location.hostname);
 console.log("🔗 URL API détectée:", API_URL);
+console.log("📝 Variable d'environnement VITE_API_URL:", import.meta.env.VITE_API_URL || "non définie");
+console.groupEnd();
 
 const api = axios.create({
   baseURL: API_URL,
