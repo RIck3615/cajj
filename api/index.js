@@ -133,10 +133,14 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Erreur fatale:', error);
+    console.error('Stack:', error.stack);
     return res.status(500).json({
       error: 'Erreur de chargement',
       message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      details: error.toString(),
+      stack: process.env.VERCEL ? error.stack : undefined,
+      path: error.path || 'N/A',
+      code: error.code || 'N/A'
     });
   }
 };

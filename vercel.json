@@ -18,8 +18,10 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "backend/**"
-        ]
+          "backend/**",
+          "package.json"
+        ],
+        "maxLambdaSize": "50mb"
       }
     }
   ],
