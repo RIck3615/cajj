@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Mail, Phone } from "lucide-react";
 
 import { siteInfo } from "@/data/staticContent";
@@ -22,9 +23,16 @@ const Footer = () => {
             +243 000 000 000
           </a>
         </div>
-        <p className="text-xs text-primary-foreground/70">
-          &copy; {new Date().getFullYear()} Tous droits réservés.
-        </p>
+        <div className="flex flex-col items-center gap-1 text-xs text-primary-foreground/70 md:items-end">
+          <p>&copy; {new Date().getFullYear()} Tous droits réservés.</p>
+          <Link
+            to="/admin/login"
+            className="opacity-50 transition hover:opacity-100"
+            title="Administration"
+          >
+            Admin
+          </Link>
+        </div>
       </div>
     </footer>
   );
