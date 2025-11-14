@@ -2,6 +2,15 @@
 // Format simplifié et robuste
 
 module.exports = async (req, res) => {
+  // Log immédiat pour vérifier que la fonction est appelée
+  console.log('🚀 FONCTION SERVERLESS APPELÉE:', {
+    url: req.url,
+    method: req.method,
+    path: req.path,
+    timestamp: new Date().toISOString(),
+    vercel: !!process.env.VERCEL
+  });
+  
   // Headers CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -9,6 +18,7 @@ module.exports = async (req, res) => {
   
   // Gérer les requêtes OPTIONS (preflight)
   if (req.method === 'OPTIONS') {
+    console.log('✅ OPTIONS request handled');
     return res.status(200).end();
   }
 

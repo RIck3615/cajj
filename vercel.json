@@ -13,10 +13,8 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "backend/**",
-          "package.json"
-        ],
-        "maxLambdaSize": "50mb"
+          "backend/**"
+        ]
       }
     }
   ],
@@ -26,7 +24,7 @@
       "destination": "/api/index"
     },
     {
-      "source": "/((?!api|_next|assets|.*\\.[a-z0-9]+$).*)",
+      "source": "/((?!api|assets|.*\\.[a-z0-9]+$).*)",
       "destination": "/index.html"
     }
   ]
