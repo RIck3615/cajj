@@ -3,5 +3,7 @@
   "version": "1.0.0",
   "description": "CAJJ ASBL - Centre d'Aide Juridico Judiciaire",
   "type": "commonjs",
-  "scripts": {}
+  "scripts": {
+    "build:hostinger": "node build-for-hostinger.js"
+  }
 }
