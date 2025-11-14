@@ -10,16 +10,21 @@ function getApiUrl() {
   // 2. Détection automatique basée sur l'URL actuelle
   const currentUrl = window.location.origin;
   
-  // Si on est en production (vercel, netlify, hostinger, etc.)
-  if (currentUrl.includes("vercel.app") || currentUrl.includes("netlify.app") || currentUrl.includes("github.io") || currentUrl.includes("hostinger")) {
+  // Si on est en production sur Hostinger
+  if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+    // Utiliser /api/public/api car Laravel est dans /api/public/
+    // et les routes sont préfixées avec /api
+    return `${currentUrl}/api/public/api`;
+  }
+  
+  // Si on est en production (vercel, netlify, etc.)
+  if (currentUrl.includes("vercel.app") || currentUrl.includes("netlify.app") || currentUrl.includes("github.io")) {
     // Si VITE_API_URL est configuré, l'utiliser (backend déployé séparément)
     if (import.meta.env.VITE_API_URL) {
       return import.meta.env.VITE_API_URL;
     }
     
     // Sinon, utiliser l'API relative (backend sur le même domaine)
-    // Pour Vercel: vercel.json route /api/* vers le backend
-    // Pour Hostinger: l'API est accessible sur /api
     const relativeApiUrl = `${currentUrl}/api`;
     console.warn("⚠️ VITE_API_URL n'est pas configuré. Utilisation de l'API relative:", relativeApiUrl);
     console.warn("💡 Pour un backend séparé, configurez VITE_API_URL");

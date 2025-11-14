@@ -51,14 +51,16 @@ Après avoir créé le lien, vérifiez que :
 ## Dépannage
 
 ### Le lien n'apparaît pas dans le File Manager
+
 - Certains hébergeurs masquent les liens symboliques dans l'interface
 - Vérifiez via SSH ou testez l'accès direct à une image
 
 ### Erreur 403 Forbidden sur les images
+
 - Vérifiez les permissions : `chmod -R 755 storage/app/public`
 - Vérifiez que le fichier `.htaccess` dans `storage/app/public` autorise l'accès
 
 ### Erreur 404 Not Found
+
 - Vérifiez que le lien symbolique pointe vers le bon chemin
 - Vérifiez que les fichiers sont bien dans `storage/app/public/photos/` ou `videos/`
-

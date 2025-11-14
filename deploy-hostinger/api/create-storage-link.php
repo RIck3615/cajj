@@ -2,7 +2,7 @@
 /**
  * Script alternatif pour créer le lien symbolique storage
  * À utiliser quand exec() n'est pas disponible sur le serveur
- * 
+ *
  * Usage: php create-storage-link.php
  */
 
