@@ -13,19 +13,20 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "backend/**"
+          "backend/**",
+          "package.json"
         ]
       }
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/index"
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
     },
     {
-      "source": "/((?!api|assets|.*\\.[a-z0-9]+$).*)",
-      "destination": "/index.html"
+      "src": "/((?!api|assets|.*\\.[a-z0-9]+$).*)",
+      "dest": "/index.html"
     }
   ]
 }
