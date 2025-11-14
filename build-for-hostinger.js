@@ -42,6 +42,13 @@ const backendDest = path.join(deployDir, 'api');
 copyBackendFiles(backendSrc, backendDest);
 console.log('✅ Backend copié');
 
+// Copier le guide de création du lien storage
+const storageGuide = path.join(__dirname, 'CREER_LIEN_STORAGE.md');
+if (fs.existsSync(storageGuide)) {
+  fs.copyFileSync(storageGuide, path.join(deployDir, 'CREER_LIEN_STORAGE.md'));
+  console.log('✅ Guide lien storage copié');
+}
+
 // 5. Copier le .htaccess du frontend
 const frontendHtaccess = path.join(__dirname, 'frontend', '.htaccess');
 if (fs.existsSync(frontendHtaccess)) {
@@ -66,7 +73,10 @@ const readmeContent = `# Fichiers prêts pour le déploiement sur Hostinger
 5. Configurez la base de données MySQL
 6. Modifiez api/.env avec vos informations de base de données
 7. Exécutez les migrations : cd api && php artisan migrate --force
-8. Créez le lien symbolique : php artisan storage:link
+8. Créez le lien symbolique storage :
+   - Option 1 : php api/create-storage-link.php
+   - Option 2 : Via File Manager (voir CREER_LIEN_STORAGE.md)
+   - Option 3 : Via SSH : cd api/public && ln -s ../storage/app/public storage
 
 ## Configuration requise
 
@@ -74,6 +84,12 @@ const readmeContent = `# Fichiers prêts pour le déploiement sur Hostinger
 - MySQL 5.7 ou supérieur
 - mod_rewrite activé
 - Composer installé (ou utilisez le vendor/ fourni)
+
+## Important : Lien symbolique storage
+
+Sur Hostinger, la commande "php artisan storage:link" peut échouer car exec() est désactivé.
+Utilisez le script alternatif : php api/create-storage-link.php
+Voir CREER_LIEN_STORAGE.md pour plus de détails.
 `;
 
 fs.writeFileSync(path.join(deployDir, 'README-DEPLOIEMENT.txt'), readmeContent);
@@ -147,7 +163,8 @@ function copyBackendFiles(src, dest) {
     'storage/framework/sessions',
     'storage/framework/views',
     'storage/logs',
-    'bootstrap/cache'
+    'bootstrap/cache',
+    'public/storage' // Dossier pour le lien symbolique
   ];
 
   storageDirs.forEach(dir => {
@@ -156,5 +173,11 @@ function copyBackendFiles(src, dest) {
       fs.mkdirSync(fullPath, { recursive: true });
     }
   });
+
+  // Copier le script de création de lien symbolique
+  const createLinkScript = path.join(src, 'create-storage-link.php');
+  if (fs.existsSync(createLinkScript)) {
+    fs.copyFileSync(createLinkScript, path.join(dest, 'create-storage-link.php'));
+  }
 }
 
