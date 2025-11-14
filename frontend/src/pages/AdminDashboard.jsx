@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LogOut, Plus, Trash2, Edit, Image, Video, Newspaper, BookOpen, Users } from "lucide-react";
+import { LogOut, Plus, Trash2, Edit, Image, Video, Newspaper, BookOpen, Users, Target } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +40,10 @@ import {
   getAbout,
   updateAboutSection,
 } from "@/services/admin";
+import {
+  getActions,
+  updateAction,
+} from "@/services/admin";
 
 import { API_URL } from "@/services/api";
 
@@ -51,6 +55,7 @@ const AdminDashboard = () => {
   const [videos, setVideos] = useState([]);
   const [publications, setPublications] = useState({ cajj: [], partners: [] });
   const [about, setAbout] = useState({ sections: [] });
+  const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -75,6 +80,9 @@ const AdminDashboard = () => {
       } else if (activeTab === "about") {
         const res = await getAbout();
         setAbout(res.data);
+      } else if (activeTab === "actions") {
+        const res = await getActions();
+        setActions(res.data);
       }
     } catch (err) {
       console.error("Erreur chargement données:", err);
@@ -142,6 +150,14 @@ const AdminDashboard = () => {
             <Users className="mr-2 h-4 w-4" />
             Nous connaître
           </Button>
+          <Button
+            variant={activeTab === "actions" ? "default" : "ghost"}
+            onClick={() => setActiveTab("actions")}
+            className="rounded-b-none"
+          >
+            <Target className="mr-2 h-4 w-4" />
+            Actions
+          </Button>
         </div>
 
         {activeTab === "news" && (
@@ -158,6 +174,9 @@ const AdminDashboard = () => {
         )}
         {activeTab === "about" && (
           <AboutManager about={about} onRefresh={loadData} loading={loading} />
+        )}
+        {activeTab === "actions" && (
+          <ActionsManager actions={actions} onRefresh={loadData} loading={loading} />
         )}
       </div>
     </div>
@@ -492,9 +511,17 @@ const PhotosManager = ({ photos, onRefresh, loading }) => {
       ) : (
         <div className="grid gap-4 md:grid-cols-3">
           {photos.map((photo) => {
-            const imageUrl = photo.url.startsWith("http") 
-              ? photo.url 
-              : `${API_URL}${photo.url}`;
+            // Construire l'URL correctement : /storage/ est dans public/, pas dans /api/
+            let imageUrl;
+            if (photo.url.startsWith("http")) {
+              imageUrl = photo.url;
+            } else if (photo.url.startsWith("/storage/")) {
+              // Pour /storage/, utiliser l'URL de base sans /api
+              const baseUrl = API_URL.replace('/api', '');
+              imageUrl = `${baseUrl}${photo.url}`;
+            } else {
+              imageUrl = `${API_URL}${photo.url}`;
+            }
             
             return (
               <Card key={photo.id} className="overflow-hidden">
@@ -1097,6 +1124,133 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                   </div>
                 </div>
               </CardHeader>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Composant gestion actions
+const ActionsManager = ({ actions, onRefresh, loading }) => {
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState({ title: "", description: "", order: 0 });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleEdit = (action) => {
+    setEditingId(action.action_id);
+    setFormData({
+      title: action.title,
+      description: action.description,
+      order: action.order || 0,
+    });
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setFormData({ title: "", description: "", order: 0 });
+  };
+
+  const handleSubmit = async (e, actionId) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await updateAction(actionId, formData);
+      handleCancel();
+      onRefresh();
+    } catch (err) {
+      alert("Erreur: " + (err.response?.data?.error || "Erreur inconnue"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Gestion des actions</h2>
+      </div>
+
+      {loading ? (
+        <p className="text-center text-muted-foreground">Chargement...</p>
+      ) : actions.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            Aucune action pour le moment
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {actions.map((action) => (
+            <Card key={action.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg">{action.title}</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ID: {action.action_id} • Ordre: {action.order}
+                    </p>
+                  </div>
+                  {editingId !== action.action_id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(action)}
+                      title="Modifier"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {editingId === action.action_id ? (
+                  <form onSubmit={(e) => handleSubmit(e, action.action_id)} className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Titre</label>
+                      <input
+                        type="text"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Description</label>
+                      <textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+                        rows={5}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Ordre</label>
+                      <input
+                        type="number"
+                        value={formData.order}
+                        onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                        className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={submitting}>
+                        {submitting ? "Enregistrement..." : "Enregistrer"}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={handleCancel}>
+                        Annuler
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">
+                    {action.description}
+                  </p>
+                )}
+              </CardContent>
             </Card>
           ))}
         </div>

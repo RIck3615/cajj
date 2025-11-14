@@ -15,7 +15,7 @@ const Galerie = () => {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        const response = await api.get("/api/gallery");
+        const response = await api.get("/gallery");
         console.log("Galerie chargée:", response.data);
         setGallery(response.data);
       } catch (error) {
@@ -77,7 +77,9 @@ const Galerie = () => {
                     </Button>
                   ) : (
                     <video
-                      src={`${API_URL}${item.url}`}
+                      src={item.url.startsWith("/storage/") 
+                        ? `${API_URL.replace('/api', '')}${item.url}`
+                        : `${API_URL}${item.url}`}
                       controls
                       className="w-full rounded-md"
                       style={{ maxHeight: "300px" }}
@@ -107,9 +109,17 @@ const Galerie = () => {
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {gallery.photos.map((item) => {
-                  const imageUrl = item.url.startsWith("http")
-                    ? item.url
-                    : `${API_URL}${item.url}`;
+                  // Construire l'URL correctement : /storage/ est dans public/, pas dans /api/
+                  let imageUrl;
+                  if (item.url.startsWith("http")) {
+                    imageUrl = item.url;
+                  } else if (item.url.startsWith("/storage/")) {
+                    // Pour /storage/, utiliser l'URL de base sans /api
+                    const baseUrl = API_URL.replace('/api', '');
+                    imageUrl = `${baseUrl}${item.url}`;
+                  } else {
+                    imageUrl = `${API_URL}${item.url}`;
+                  }
                   
                   console.log("Affichage photo:", { item, imageUrl, API_URL });
                   

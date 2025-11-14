@@ -2,7 +2,7 @@ import api from "./api";
 
 export const login = async (username, password) => {
   try {
-    const response = await api.post("/api/auth/login", { username, password });
+    const response = await api.post("/auth/login", { username, password });
     if (response.data.token) {
       localStorage.setItem("admin_token", response.data.token);
     }
@@ -24,8 +24,8 @@ export const login = async (username, password) => {
       throw new Error(
         `Impossible de contacter le serveur à l'adresse ${apiUrl}.\n\n` +
         `Vérifiez que :\n` +
-        `1. Le backend est démarré (cd backend && npm run dev)\n` +
-        `2. Le backend écoute sur le port 4000\n` +
+        `1. Le backend Laravel est démarré (cd backend-laravel && php artisan serve)\n` +
+        `2. Le backend écoute sur le port 8000\n` +
         `3. L'URL de l'API est correcte (voir la console du navigateur)`
       );
     } else {

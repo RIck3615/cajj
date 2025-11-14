@@ -16,7 +16,7 @@ const Publications = () => {
   useEffect(() => {
     const fetchPublications = async () => {
       try {
-        const response = await api.get("/api/publications");
+        const response = await api.get("/publications");
         console.log("Publications chargées:", response.data);
         setPublications(response.data);
       } catch (error) {

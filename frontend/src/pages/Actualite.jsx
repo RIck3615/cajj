@@ -13,7 +13,7 @@ const Actualite = () => {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const response = await api.get("/api/news");
+        const response = await api.get("/news");
         console.log("Actualités chargées:", response.data);
         setNews(response.data);
       } catch (error) {

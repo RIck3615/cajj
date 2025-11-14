@@ -13,7 +13,7 @@ const About = () => {
   useEffect(() => {
     const fetchAbout = async () => {
       try {
-        const response = await api.get("/api/about");
+        const response = await api.get("/about");
         console.log("Section 'Nous connaître' chargée:", response.data);
         setAboutSections(response.data.sections || []);
       } catch (error) {

@@ -26,13 +26,16 @@ const AdminLogin = () => {
     fetch(`${API_URL}/`, { 
       method: "GET",
       mode: "cors",
-      cache: "no-cache"
+      cache: "no-cache",
+      headers: {
+        'Accept': 'application/json',
+      }
     })
       .then((res) => {
         if (res.ok) {
           return res.json();
         }
-        throw new Error("Réponse non OK");
+        throw new Error(`Réponse non OK: ${res.status} ${res.statusText}`);
       })
       .then((data) => {
         console.log("✅ Backend accessible:", data);
@@ -40,6 +43,9 @@ const AdminLogin = () => {
       })
       .catch((err) => {
         console.error("❌ Backend inaccessible:", err);
+        console.error("URL testée:", API_URL);
+        console.error("Type d'erreur:", err.name);
+        console.error("Message:", err.message);
         setBackendStatus("offline");
       });
   }, []);
@@ -145,9 +151,9 @@ const AdminLogin = () => {
                       <div className="mt-3 pt-3 border-t border-destructive/20 text-xs">
                         <div className="font-semibold mb-1">💡 Solutions possibles :</div>
                         <ul className="list-disc list-inside space-y-1">
-                          <li>Vérifiez que le backend est démarré : <code className="bg-destructive/20 px-1 rounded">cd backend && npm run dev</code></li>
+                          <li>Vérifiez que le backend Laravel est démarré : <code className="bg-destructive/20 px-1 rounded">cd backend-laravel && php artisan serve</code></li>
                           <li>Vérifiez l'URL de l'API dans la console (F12)</li>
-                          <li>Si vous êtes sur un autre ordinateur, créez <code className="bg-destructive/20 px-1 rounded">frontend/.env</code> avec <code className="bg-destructive/20 px-1 rounded">VITE_API_URL=http://[IP]:4000</code></li>
+                          <li>Si vous êtes sur un autre ordinateur, créez <code className="bg-destructive/20 px-1 rounded">frontend/.env</code> avec <code className="bg-destructive/20 px-1 rounded">VITE_API_URL=http://[IP]:8000/api</code></li>
                         </ul>
                       </div>
                     </div>

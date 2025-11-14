@@ -10,18 +10,19 @@ function getApiUrl() {
   // 2. Détection automatique basée sur l'URL actuelle
   const currentUrl = window.location.origin;
   
-  // Si on est en production (vercel, netlify, etc.)
-  if (currentUrl.includes("vercel.app") || currentUrl.includes("netlify.app") || currentUrl.includes("github.io")) {
+  // Si on est en production (vercel, netlify, hostinger, etc.)
+  if (currentUrl.includes("vercel.app") || currentUrl.includes("netlify.app") || currentUrl.includes("github.io") || currentUrl.includes("hostinger")) {
     // Si VITE_API_URL est configuré, l'utiliser (backend déployé séparément)
     if (import.meta.env.VITE_API_URL) {
       return import.meta.env.VITE_API_URL;
     }
     
-    // Sinon, utiliser l'API relative (backend sur le même domaine Vercel)
-    // Le vercel.json route /api/* vers le backend
+    // Sinon, utiliser l'API relative (backend sur le même domaine)
+    // Pour Vercel: vercel.json route /api/* vers le backend
+    // Pour Hostinger: l'API est accessible sur /api
     const relativeApiUrl = `${currentUrl}/api`;
     console.warn("⚠️ VITE_API_URL n'est pas configuré. Utilisation de l'API relative:", relativeApiUrl);
-    console.warn("💡 Pour un backend séparé, configurez VITE_API_URL dans Vercel (Settings > Environment Variables)");
+    console.warn("💡 Pour un backend séparé, configurez VITE_API_URL");
     return relativeApiUrl;
   }
 
@@ -29,13 +30,13 @@ function getApiUrl() {
   // Détecter si on est sur un autre appareil (IP locale)
   const hostname = window.location.hostname;
   
-  // Si ce n'est pas localhost, utiliser le même hostname avec le port 4000
+  // Si ce n'est pas localhost, utiliser le même hostname avec le port 8000 (Laravel)
   if (hostname !== "localhost" && hostname !== "127.0.0.1") {
-    return `http://${hostname}:4000`;
+    return `http://${hostname}:8000/api`;
   }
 
-  // 4. Par défaut, utiliser localhost
-  return "http://localhost:4000";
+  // 4. Par défaut, utiliser localhost avec le port 8000 (Laravel)
+  return "http://localhost:8000/api";
 }
 
 const API_URL = getApiUrl();
