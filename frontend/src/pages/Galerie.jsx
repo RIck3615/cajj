@@ -80,8 +80,8 @@ const Galerie = () => {
                       src={(() => {
                         if (item.url.startsWith("/storage/")) {
                           const currentUrl = window.location.origin;
-                          if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
-                            // Sur Hostinger, les fichiers sont accessibles directement via /api/public/storage/
+                          if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                            // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                             return `${currentUrl}/api/public${item.url}`;
                           } else {
                             // En développement, utiliser l'API Laravel
@@ -126,8 +126,8 @@ const Galerie = () => {
                   } else if (item.url.startsWith("/storage/")) {
                     // Pour /storage/, utiliser le chemin direct sur Hostinger
                     const currentUrl = window.location.origin;
-                    if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
-                      // Sur Hostinger, les fichiers sont accessibles directement via /api/public/storage/
+                    if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                      // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                       imageUrl = `${currentUrl}/api/public${item.url}`;
                     } else {
                       // En développement, utiliser l'API Laravel

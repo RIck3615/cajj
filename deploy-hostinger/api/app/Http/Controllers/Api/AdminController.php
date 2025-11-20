@@ -166,25 +166,134 @@ class AdminController extends Controller
 
     public function uploadPhoto(Request $request)
     {
-        $request->validate([
-            'file' => 'required|image|max:51200', // 50MB
-            'title' => 'nullable|string',
-            'description' => 'nullable|string',
-        ]);
+        try {
+            $request->validate([
+                'file' => 'required|image|max:51200', // 50MB
+                'title' => 'nullable|string',
+                'description' => 'nullable|string',
+            ]);
 
-        $file = $request->file('file');
-        $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('photos', $filename, 'public');
+            $file = $request->file('file');
+            
+            // Vérifier que le fichier existe
+            if (!$file || !$file->isValid()) {
+                \Log::error('Invalid file uploaded', [
+                    'has_file' => $request->hasFile('file'),
+                    'error' => $file ? $file->getError() : 'No file',
+                    'error_message' => $file ? $file->getErrorMessage() : 'No file provided',
+                ]);
+                return response()->json(['error' => 'Fichier invalide ou absent'], 400);
+            }
 
-        $photo = Photo::create([
-            'title' => $request->title ?? $file->getClientOriginalName(),
-            'description' => $request->description ?? '',
-            'url' => '/storage/' . $path,
-            'filename' => $filename,
-            'visible' => true,
-        ]);
+            // Vérifier que le dossier photos existe, sinon le créer
+            $photosDir = storage_path('app/public/photos');
+            if (!file_exists($photosDir)) {
+                \Log::info('Creating photos directory', ['path' => $photosDir]);
+                if (!mkdir($photosDir, 0755, true)) {
+                    \Log::error('Failed to create photos directory', ['path' => $photosDir]);
+                    return response()->json(['error' => 'Impossible de créer le dossier photos'], 500);
+                }
+            }
 
-        return response()->json(['message' => 'Photo ajoutée', 'photo' => $photo]);
+            // Vérifier les permissions du dossier
+            if (!is_writable($photosDir)) {
+                \Log::error('Photos directory is not writable', [
+                    'path' => $photosDir,
+                    'perms' => substr(sprintf('%o', fileperms($photosDir)), -4)
+                ]);
+                return response()->json(['error' => 'Le dossier photos n\'est pas accessible en écriture'], 500);
+            }
+
+            $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+            
+            \Log::info('Uploading photo', [
+                'original_name' => $file->getClientOriginalName(),
+                'filename' => $filename,
+                'size' => $file->getSize(),
+                'mime' => $file->getMimeType(),
+                'storage_path' => storage_path('app/public'),
+                'photos_dir' => $photosDir,
+            ]);
+
+            // Utiliser Storage facade pour plus de contrôle
+            try {
+                $path = $file->storeAs('photos', $filename, 'public');
+                \Log::info('storeAs returned', ['path' => $path]);
+            } catch (\Exception $e) {
+                \Log::error('storeAs failed', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                return response()->json(['error' => 'Erreur lors de la sauvegarde: ' . $e->getMessage()], 500);
+            }
+
+            // Vérifier que le fichier a été sauvegardé
+            $fullPath = storage_path('app/public/' . $path);
+            \Log::info('Checking if file exists', [
+                'path' => $path,
+                'full_path' => $fullPath,
+                'exists' => file_exists($fullPath),
+            ]);
+
+            if (!file_exists($fullPath)) {
+                // Essayer de trouver le fichier ailleurs
+                $alternatePaths = [
+                    storage_path('app/public/photos/' . $filename),
+                    storage_path('public/photos/' . $filename),
+                    $photosDir . '/' . $filename,
+                ];
+                
+                \Log::error('File was not saved after storeAs', [
+                    'path' => $path,
+                    'full_path' => $fullPath,
+                    'alternate_paths' => $alternatePaths,
+                    'storage_base' => storage_path('app/public'),
+                    'photos_dir_exists' => file_exists($photosDir),
+                    'photos_dir_writable' => is_writable($photosDir),
+                    'disk_space' => disk_free_space($photosDir),
+                ]);
+
+                // Essayer de sauvegarder manuellement
+                try {
+                    $manualPath = $photosDir . '/' . $filename;
+                    if ($file->move($photosDir, $filename)) {
+                        \Log::info('File saved manually', ['path' => $manualPath]);
+                        $path = 'photos/' . $filename;
+                        $fullPath = storage_path('app/public/' . $path);
+                    } else {
+                        return response()->json(['error' => 'Le fichier n\'a pas pu être sauvegardé (méthode manuelle échouée)'], 500);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Manual save failed', ['message' => $e->getMessage()]);
+                    return response()->json(['error' => 'Le fichier n\'a pas pu être sauvegardé: ' . $e->getMessage()], 500);
+                }
+            }
+
+            \Log::info('Photo saved successfully', [
+                'path' => $path,
+                'full_path' => $fullPath,
+                'file_size' => filesize($fullPath),
+            ]);
+
+            $photo = Photo::create([
+                'title' => $request->title ?? $file->getClientOriginalName(),
+                'description' => $request->description ?? '',
+                'url' => '/storage/' . $path,
+                'filename' => $filename,
+                'visible' => true,
+            ]);
+
+            return response()->json(['message' => 'Photo ajoutée', 'photo' => $photo]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::warning('Validation error in uploadPhoto', ['errors' => $e->errors()]);
+            return response()->json(['error' => 'Erreur de validation', 'details' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error uploading photo', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Erreur lors de l\'upload: ' . $e->getMessage()], 500);
+        }
     }
 
     public function updatePhoto(Request $request, $id)

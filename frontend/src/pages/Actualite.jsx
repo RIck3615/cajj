@@ -71,8 +71,8 @@ const Actualite = () => {
                 const hostname = window.location.hostname;
                 
                 // Détection Hostinger
-                if (hostname.includes("hostinger") || hostname.includes("hostingersite.com") || currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
-                  // Sur Hostinger, utiliser le chemin direct /api/public/storage/...
+                if (hostname.includes("hostinger") || hostname.includes("hostingersite.com") || hostname.includes("cajjrdc.com") || currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                  // Sur Hostinger, utiliser la route web (pas API) pour servir les fichiers storage
                   const url = `${currentUrl}/api/public${item.media_url}`;
                   console.log("🖼️ URL image Hostinger:", url);
                   return url;

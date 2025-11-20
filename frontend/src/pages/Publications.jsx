@@ -71,7 +71,8 @@ const Publications = () => {
                   if (item.media_url.startsWith("/storage/")) {
                     const currentUrl = window.location.origin;
                     const hostname = window.location.hostname;
-                    if (hostname.includes("hostinger") || hostname.includes("hostingersite.com") || currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                    if (hostname.includes("hostinger") || hostname.includes("hostingersite.com") || hostname.includes("cajjrdc.com") || currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                      // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                       return `${currentUrl}/api/public${item.media_url}`;
                     } else {
                       const API_URL = window.location.origin + "/api";
@@ -153,7 +154,8 @@ const Publications = () => {
                   if (item.media_url.startsWith("/storage/")) {
                     const currentUrl = window.location.origin;
                     const hostname = window.location.hostname;
-                    if (hostname.includes("hostinger") || hostname.includes("hostingersite.com") || currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                    if (hostname.includes("hostinger") || hostname.includes("hostingersite.com") || hostname.includes("cajjrdc.com") || currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                      // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                       return `${currentUrl}/api/public${item.media_url}`;
                     } else {
                       const API_URL = window.location.origin + "/api";

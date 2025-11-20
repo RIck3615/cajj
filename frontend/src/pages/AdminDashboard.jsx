@@ -218,7 +218,8 @@ const NewsManager = ({ news, onRefresh, loading }) => {
       const currentUrl = window.location.origin;
       let mediaUrl = item.media_url;
       if (item.media_url.startsWith("/storage/")) {
-        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+          // Sur Hostinger, utiliser la route web (pas API) pour servir les fichiers storage
           mediaUrl = `${currentUrl}/api/public${item.media_url}`;
         } else {
           // En développement, utiliser l'API Laravel
@@ -493,7 +494,8 @@ const NewsManager = ({ news, onRefresh, loading }) => {
                             return item.media_url;
                           } else if (item.media_url.startsWith("/storage/")) {
                             const currentUrl = window.location.origin;
-                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                              // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                               return `${currentUrl}/api/public${item.media_url}`;
                             } else {
                               const API_URL = window.location.origin + "/api";
@@ -513,7 +515,8 @@ const NewsManager = ({ news, onRefresh, loading }) => {
                             return item.media_url;
                           } else if (item.media_url.startsWith("/storage/")) {
                             const currentUrl = window.location.origin;
-                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                              // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                               return `${currentUrl}/api/public${item.media_url}`;
                             } else {
                               const API_URL = window.location.origin + "/api";
@@ -694,8 +697,8 @@ const PhotosManager = ({ photos, onRefresh, loading }) => {
             } else if (photo.url.startsWith("/storage/")) {
               // Pour /storage/, utiliser le chemin direct sur Hostinger
               const currentUrl = window.location.origin;
-              if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
-                // Sur Hostinger, les fichiers sont accessibles directement via /api/public/storage/
+              if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                 imageUrl = `${currentUrl}/api/public${photo.url}`;
               } else {
                 // En développement, utiliser l'API Laravel
@@ -1065,8 +1068,8 @@ const VideosManager = ({ videos, onRefresh, loading }) => {
                     src={(() => {
                       if (video.url.startsWith("/storage/")) {
                         const currentUrl = window.location.origin;
-                        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
-                          // Sur Hostinger, les fichiers sont accessibles directement via /api/public/storage/
+                        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                          // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                           return `${currentUrl}/api/public${video.url}`;
                         } else {
                           // En développement, utiliser l'API Laravel
@@ -1117,7 +1120,8 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
       const currentUrl = window.location.origin;
       let mediaUrl = item.media_url;
       if (item.media_url.startsWith("/storage/")) {
-        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+          // Sur Hostinger, utiliser la route web (pas API) pour servir les fichiers storage
           mediaUrl = `${currentUrl}/api/public${item.media_url}`;
         } else {
           const API_URL = window.location.origin + "/api";
@@ -1437,7 +1441,8 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                             return item.media_url;
                           } else if (item.media_url.startsWith("/storage/")) {
                             const currentUrl = window.location.origin;
-                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                              // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                               return `${currentUrl}/api/public${item.media_url}`;
                             } else {
                               const API_URL = window.location.origin + "/api";
@@ -1457,7 +1462,8 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                             return item.media_url;
                           } else if (item.media_url.startsWith("/storage/")) {
                             const currentUrl = window.location.origin;
-                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                              // Sur Hostinger, utiliser la route Laravel pour servir les fichiers storage
                               return `${currentUrl}/api/public${item.media_url}`;
                             } else {
                               const API_URL = window.location.origin + "/api";
