@@ -34,8 +34,8 @@ const Header = () => {
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">
               CAJJ ASBL
             </span>
-            <span className="text-[0.65rem] uppercase tracking-[0.25em] text-muted-foreground">
-              {siteInfo.name}
+            <span className="text-[0.65rem] uppercase tracking-[0.15em] text-muted-foreground">
+              Centre d'Aide Juridico Judiciaire
             </span>
           </div>
         </Link>

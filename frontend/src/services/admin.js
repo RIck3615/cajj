@@ -6,6 +6,7 @@ export const createNews = (data) => {
   if (data instanceof FormData) {
     return api.post("/admin/news", data, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 300000, // 5 minutes pour les uploads de fichiers
     });
   }
   return api.post("/admin/news", data);
@@ -16,6 +17,7 @@ export const updateNews = (id, data) => {
     data.append('_method', 'PUT');
     return api.post(`/admin/news/${id}`, data, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 300000, // 5 minutes pour les uploads de fichiers
     });
   }
   return api.put(`/admin/news/${id}`, data);
@@ -29,6 +31,7 @@ export const getPhotos = () => api.get("/admin/gallery/photos");
 export const uploadPhoto = (formData) =>
   api.post("/admin/gallery/photos", formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    timeout: 300000, // 5 minutes pour les uploads de fichiers
   });
 export const updatePhoto = (id, data) => api.put(`/admin/gallery/photos/${id}`, data);
 export const deletePhoto = (id) => api.delete(`/admin/gallery/photos/${id}`);
@@ -40,6 +43,7 @@ export const getVideos = () => api.get("/admin/gallery/videos");
 export const uploadVideo = (formData) =>
   api.post("/admin/gallery/videos", formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    timeout: 300000, // 5 minutes pour les uploads de fichiers vidéo
   });
 export const addVideoUrl = (data) => api.post("/admin/gallery/videos", data);
 export const updateVideo = (id, data) => api.put(`/admin/gallery/videos/${id}`, data);
@@ -53,6 +57,7 @@ export const createPublication = (type, data) => {
   if (data instanceof FormData) {
     return api.post(`/admin/publications/${type}`, data, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 300000, // 5 minutes pour les uploads de fichiers
     });
   }
   return api.post(`/admin/publications/${type}`, data);
@@ -63,6 +68,7 @@ export const updatePublication = (type, id, data) => {
     data.append('_method', 'PUT');
     return api.post(`/admin/publications/${type}/${id}`, data, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 300000, // 5 minutes pour les uploads de fichiers
     });
   }
   return api.put(`/admin/publications/${type}/${id}`, data);

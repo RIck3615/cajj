@@ -11,7 +11,7 @@ const Footer = () => {
           <p className="text-sm uppercase tracking-[0.3em] text-primary-foreground/70">
             CAJJ ASBL
           </p>
-          <p className="text-lg font-semibold">{siteInfo.name}</p>
+          <p className="text-lg font-semibold">Centre d'Aide Juridico Judiciaire</p>
         </div>
         <div className="flex flex-col gap-2 text-sm text-primary-foreground/85">
           <a href="mailto:info@cajj-asbl.org" className="flex items-center justify-center gap-2 md:justify-start">

@@ -20,3 +20,19 @@
     RewriteCond %{REQUEST_FILENAME} !-l
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Configuration PHP pour les uploads de gros fichiers (vidéos)
+# Note: Ces directives peuvent ne pas fonctionner sur tous les hébergeurs
+# Si cela ne fonctionne pas, configurez ces valeurs dans php.ini ou .user.ini
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 100M
+    php_value post_max_size 100M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 100M
+    php_value post_max_size 100M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>

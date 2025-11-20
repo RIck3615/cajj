@@ -1,5 +1,6 @@
 export const siteInfo = {
-  name: "Centre d’Aide Juridico Judiciaire CAJJ ASBL",
+  name: "Centre d'Aide Juridico Judiciaire CAJJ ASBL",
+  shortName: "CAJJ ASBL",
   tagline: "Nous sommes la voix des sans voix",
   subTagline: "La promotion et la protection des droits humains est notre priorité absolue",
 };
