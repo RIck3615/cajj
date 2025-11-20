@@ -91,6 +91,8 @@ class PublicController extends Controller
                     'content' => $item->content,
                     'date' => $item->date->toISOString(),
                     'author' => $item->author,
+                    'media_url' => $item->media_url,
+                    'media_type' => $item->media_type,
                 ];
             });
         

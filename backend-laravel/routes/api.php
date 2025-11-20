@@ -49,7 +49,7 @@ Route::prefix('admin')->middleware('jwt.auth')->group(function () {
     // Actualités
     Route::get('/news', [AdminController::class, 'getNews']);
     Route::post('/news', [AdminController::class, 'createNews']);
-    Route::put('/news/{id}', [AdminController::class, 'updateNews']);
+    Route::match(['put', 'post'], '/news/{id}', [AdminController::class, 'updateNews']); // POST pour FormData avec _method=PUT
     Route::delete('/news/{id}', [AdminController::class, 'deleteNews']);
     Route::patch('/news/{id}/visibility', [AdminController::class, 'toggleNewsVisibility']);
 
@@ -70,7 +70,7 @@ Route::prefix('admin')->middleware('jwt.auth')->group(function () {
     // Publications
     Route::get('/publications', [AdminController::class, 'getPublications']);
     Route::post('/publications/{type}', [AdminController::class, 'createPublication']);
-    Route::put('/publications/{type}/{id}', [AdminController::class, 'updatePublication']);
+    Route::match(['put', 'post'], '/publications/{type}/{id}', [AdminController::class, 'updatePublication']); // POST pour FormData avec _method=PUT
     Route::delete('/publications/{type}/{id}', [AdminController::class, 'deletePublication']);
     Route::patch('/publications/{type}/{id}/visibility', [AdminController::class, 'togglePublicationVisibility']);
 

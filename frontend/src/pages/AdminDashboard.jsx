@@ -197,29 +197,106 @@ const AdminDashboard = () => {
 const NewsManager = ({ news, onRefresh, loading }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ title: "", content: "", author: "CAJJ" });
+  const [formData, setFormData] = useState({ title: "", content: "", author: "CAJJ", media: null });
   const [submitting, setSubmitting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewType, setPreviewType] = useState(null);
+  const [removeExistingMedia, setRemoveExistingMedia] = useState(false);
 
   const handleEdit = (item) => {
     setEditingId(item.id);
-    setFormData({ title: item.title, content: item.content, author: item.author || "CAJJ" });
+    setFormData({ 
+      title: item.title, 
+      content: item.content, 
+      author: item.author || "CAJJ",
+      media: null 
+    });
+    setRemoveExistingMedia(false);
+    // Si l'item a un média existant, l'afficher en preview
+    if (item.media_url) {
+      // Construire l'URL correctement pour Hostinger
+      const currentUrl = window.location.origin;
+      let mediaUrl = item.media_url;
+      if (item.media_url.startsWith("/storage/")) {
+        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+          mediaUrl = `${currentUrl}/api/public${item.media_url}`;
+        } else {
+          // En développement, utiliser l'API Laravel
+          const API_URL = window.location.origin + "/api";
+          mediaUrl = `${API_URL}${item.media_url}`;
+        }
+      }
+      setPreviewUrl(mediaUrl);
+      setPreviewType(item.media_type || null);
+    } else {
+      setPreviewUrl(null);
+      setPreviewType(null);
+    }
     setShowForm(true);
   };
 
   const handleCancel = () => {
     setEditingId(null);
-    setFormData({ title: "", content: "", author: "CAJJ" });
+    setFormData({ title: "", content: "", author: "CAJJ", media: null });
+    setPreviewUrl(null);
+    setPreviewType(null);
+    setRemoveExistingMedia(false);
     setShowForm(false);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, media: file });
+      setRemoveExistingMedia(false); // Si on upload un nouveau fichier, on ne supprime plus l'ancien
+      // Créer une preview
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      if (file.type.startsWith('image/')) {
+        setPreviewType('image');
+      } else if (file.type.startsWith('video/')) {
+        setPreviewType('video');
+      }
+    }
+  };
+
+  const handleRemoveMedia = () => {
+    setFormData({ ...formData, media: null });
+    // Si on est en mode édition et qu'il y a un média existant, on marque qu'on veut le supprimer
+    if (editingId && previewUrl && !previewUrl.startsWith('blob:')) {
+      setRemoveExistingMedia(true);
+      setPreviewUrl(null);
+      setPreviewType(null);
+    } else {
+      // Sinon, on supprime complètement la preview
+      setPreviewUrl(null);
+      setPreviewType(null);
+      setRemoveExistingMedia(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const data = new FormData();
+      data.append('title', formData.title);
+      data.append('content', formData.content);
+      data.append('author', formData.author);
+      
+      if (formData.media) {
+        data.append('media', formData.media);
+      }
+      
+      // Si on est en mode édition et qu'on veut supprimer le média existant
+      if (editingId && removeExistingMedia && !formData.media) {
+        data.append('remove_media', '1');
+      }
+      
       if (editingId) {
-        await updateNews(editingId, formData);
+        await updateNews(editingId, data);
       } else {
-        await createNews(formData);
+        await createNews(data);
       }
       handleCancel();
       onRefresh();
@@ -295,11 +372,54 @@ const NewsManager = ({ news, onRefresh, loading }) => {
                   className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
                 />
               </div>
+              <div>
+                <label className="text-sm font-medium">Image ou Vidéo (optionnel)</label>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Formats acceptés: JPG, PNG, GIF, WebP, MP4, AVI, MOV, WMV (max 100MB)
+                </p>
+              </div>
+              {previewUrl && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Aperçu</label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveMedia}
+                      className="text-destructive"
+                    >
+                      Supprimer
+                    </Button>
+                  </div>
+                  {previewType === 'image' ? (
+                    <img
+                      src={previewUrl}
+                      alt="Aperçu"
+                      className="w-full rounded-md border border-input"
+                      style={{ maxHeight: "300px", objectFit: "contain" }}
+                    />
+                  ) : previewType === 'video' ? (
+                    <video
+                      src={previewUrl}
+                      controls
+                      className="w-full rounded-md border border-input"
+                      style={{ maxHeight: "300px" }}
+                    />
+                  ) : null}
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                   {submitting ? "Enregistrement..." : "Enregistrer"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="w-full sm:w-auto">
+                <Button type="button" variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
                   Annuler
                 </Button>
               </div>
@@ -364,6 +484,51 @@ const NewsManager = ({ news, onRefresh, loading }) => {
                 </p>
               </CardHeader>
               <CardContent>
+                {item.media_url && (
+                  <div className="mb-4">
+                    {item.media_type === 'image' ? (
+                      <img
+                        src={(() => {
+                          if (item.media_url.startsWith("http")) {
+                            return item.media_url;
+                          } else if (item.media_url.startsWith("/storage/")) {
+                            const currentUrl = window.location.origin;
+                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                              return `${currentUrl}/api/public${item.media_url}`;
+                            } else {
+                              const API_URL = window.location.origin + "/api";
+                              return `${API_URL}${item.media_url}`;
+                            }
+                          }
+                          return item.media_url;
+                        })()}
+                        alt={item.title}
+                        className="w-full rounded-md border border-input"
+                        style={{ maxHeight: "200px", objectFit: "cover" }}
+                      />
+                    ) : item.media_type === 'video' ? (
+                      <video
+                        src={(() => {
+                          if (item.media_url.startsWith("http")) {
+                            return item.media_url;
+                          } else if (item.media_url.startsWith("/storage/")) {
+                            const currentUrl = window.location.origin;
+                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                              return `${currentUrl}/api/public${item.media_url}`;
+                            } else {
+                              const API_URL = window.location.origin + "/api";
+                              return `${API_URL}${item.media_url}`;
+                            }
+                          }
+                          return item.media_url;
+                        })()}
+                        controls
+                        className="w-full rounded-md border border-input"
+                        style={{ maxHeight: "200px" }}
+                      />
+                    ) : null}
+                  </div>
+                )}
                 <p className="text-sm">{item.content}</p>
               </CardContent>
             </Card>
@@ -929,8 +1094,11 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
   const [activeType, setActiveType] = useState("cajj"); // "cajj" ou "partners"
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ title: "", name: "", description: "", url: "" });
+  const [formData, setFormData] = useState({ title: "", name: "", description: "", url: "", media: null });
   const [submitting, setSubmitting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewType, setPreviewType] = useState(null);
+  const [removeExistingMedia, setRemoveExistingMedia] = useState(false);
 
   const currentPublications = publications[activeType] || [];
 
@@ -941,23 +1109,91 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
       name: item.name || "",
       description: item.description || "",
       url: item.url || "",
+      media: null,
     });
+    setRemoveExistingMedia(false);
+    // Si l'item a un média existant, l'afficher en preview
+    if (item.media_url) {
+      const currentUrl = window.location.origin;
+      let mediaUrl = item.media_url;
+      if (item.media_url.startsWith("/storage/")) {
+        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+          mediaUrl = `${currentUrl}/api/public${item.media_url}`;
+        } else {
+          const API_URL = window.location.origin + "/api";
+          mediaUrl = `${API_URL}${item.media_url}`;
+        }
+      }
+      setPreviewUrl(mediaUrl);
+      setPreviewType(item.media_type || null);
+    } else {
+      setPreviewUrl(null);
+      setPreviewType(null);
+    }
     setShowForm(true);
   };
 
   const handleCancel = () => {
     setEditingId(null);
-    setFormData({ title: "", name: "", description: "", url: "" });
+    setFormData({ title: "", name: "", description: "", url: "", media: null });
+    setPreviewUrl(null);
+    setPreviewType(null);
+    setRemoveExistingMedia(false);
     setShowForm(false);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, media: file });
+      setRemoveExistingMedia(false);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      if (file.type.startsWith('image/')) {
+        setPreviewType('image');
+      } else if (file.type.startsWith('video/')) {
+        setPreviewType('video');
+      }
+    }
+  };
+
+  const handleRemoveMedia = () => {
+    setFormData({ ...formData, media: null });
+    if (editingId && previewUrl && !previewUrl.startsWith('blob:')) {
+      setRemoveExistingMedia(true);
+      setPreviewUrl(null);
+      setPreviewType(null);
+    } else {
+      setPreviewUrl(null);
+      setPreviewType(null);
+      setRemoveExistingMedia(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const data = activeType === "cajj"
-        ? { title: formData.title, description: formData.description, url: formData.url }
-        : { name: formData.name, description: formData.description, url: formData.url };
+      const data = new FormData();
+      
+      if (activeType === "cajj") {
+        data.append('title', formData.title);
+        data.append('description', formData.description || '');
+        data.append('url', formData.url || '');
+      } else {
+        data.append('name', formData.name);
+        data.append('description', formData.description || '');
+        data.append('url', formData.url || '');
+      }
+      
+      if (formData.media) {
+        data.append('media', formData.media);
+      }
+      
+      // Si on est en mode édition et qu'on veut supprimer le média existant
+      if (editingId && removeExistingMedia && !formData.media) {
+        data.append('remove_media', '1');
+      }
 
       if (editingId) {
         await updatePublication(activeType, editingId, data);
@@ -1080,6 +1316,49 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                   placeholder="https://..."
                 />
               </div>
+              <div>
+                <label className="text-sm font-medium">Image ou Vidéo (optionnel)</label>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Formats acceptés: JPG, PNG, GIF, WebP, MP4, AVI, MOV, WMV (max 100MB)
+                </p>
+              </div>
+              {previewUrl && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Aperçu</label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveMedia}
+                      className="text-destructive"
+                    >
+                      Supprimer
+                    </Button>
+                  </div>
+                  {previewType === 'image' ? (
+                    <img
+                      src={previewUrl}
+                      alt="Aperçu"
+                      className="w-full rounded-md border border-input"
+                      style={{ maxHeight: "300px", objectFit: "contain" }}
+                    />
+                  ) : previewType === 'video' ? (
+                    <video
+                      src={previewUrl}
+                      controls
+                      className="w-full rounded-md border border-input"
+                      style={{ maxHeight: "300px" }}
+                    />
+                  ) : null}
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                   {submitting ? "Enregistrement..." : editingId ? "Modifier" : "Enregistrer"}
@@ -1117,6 +1396,83 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                     {item.description && (
                       <p className="text-sm text-muted-foreground break-words">{item.description}</p>
                     )}
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(item)}
+                      title="Modifier"
+                      className="h-8 w-8 p-0"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToggleVisibility(item.id, item.visible)}
+                      className={`h-8 w-8 p-0 ${item.visible ? "text-green-600" : "text-muted-foreground"}`}
+                      title={item.visible ? "Masquer" : "Publier"}
+                    >
+                      {item.visible ? "👁️" : "👁️‍🗨️"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(item.id)}
+                      className="h-8 w-8 p-0 text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {item.media_url && (
+                  <div className="mb-4">
+                    {item.media_type === 'image' ? (
+                      <img
+                        src={(() => {
+                          if (item.media_url.startsWith("http")) {
+                            return item.media_url;
+                          } else if (item.media_url.startsWith("/storage/")) {
+                            const currentUrl = window.location.origin;
+                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                              return `${currentUrl}/api/public${item.media_url}`;
+                            } else {
+                              const API_URL = window.location.origin + "/api";
+                              return `${API_URL}${item.media_url}`;
+                            }
+                          }
+                          return item.media_url;
+                        })()}
+                        alt={item.title || item.name}
+                        className="w-full rounded-md border border-input"
+                        style={{ maxHeight: "200px", objectFit: "cover" }}
+                      />
+                    ) : item.media_type === 'video' ? (
+                      <video
+                        src={(() => {
+                          if (item.media_url.startsWith("http")) {
+                            return item.media_url;
+                          } else if (item.media_url.startsWith("/storage/")) {
+                            const currentUrl = window.location.origin;
+                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                              return `${currentUrl}/api/public${item.media_url}`;
+                            } else {
+                              const API_URL = window.location.origin + "/api";
+                              return `${API_URL}${item.media_url}`;
+                            }
+                          }
+                          return item.media_url;
+                        })()}
+                        controls
+                        className="w-full rounded-md border border-input"
+                        style={{ maxHeight: "200px" }}
+                      />
+                    ) : null}
+                  </div>
+                )}
                     {item.url && (
                       <a
                         href={item.url}

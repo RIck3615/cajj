@@ -49,7 +49,7 @@ Route::prefix('admin')->middleware('jwt.auth')->group(function () {
     // Actualités
     Route::get('/news', [AdminController::class, 'getNews']);
     Route::post('/news', [AdminController::class, 'createNews']);
-    Route::put('/news/{id}', [AdminController::class, 'updateNews']);
+    Route::match(['put', 'post'], '/news/{id}', [AdminController::class, 'updateNews']); // POST pour FormData avec _method=PUT
     Route::delete('/news/{id}', [AdminController::class, 'deleteNews']);
     Route::patch('/news/{id}/visibility', [AdminController::class, 'toggleNewsVisibility']);
 

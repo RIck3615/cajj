@@ -64,25 +64,69 @@ const Publications = () => {
             ) : publications.cajj.length === 0 ? (
               <p className="text-center text-muted-foreground">Aucune publication CAJJ pour le moment.</p>
             ) : (
-              publications.cajj.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col gap-2 rounded-lg border border-border/60 bg-background/80 p-4 transition hover:border-primary/40 hover:shadow-card"
-                >
-                  <h3 className="text-lg font-semibold">{item.title}</h3>
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                  )}
-                  {item.url && item.url !== "#" && (
-                    <Button variant="link" className="p-0" asChild>
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="gap-1 text-primary">
-                        Voir la publication
-                        <ArrowRight className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              ))
+              publications.cajj.map((item) => {
+                const getMediaUrl = () => {
+                  if (!item.media_url) return null;
+                  if (item.media_url.startsWith("http")) return item.media_url;
+                  if (item.media_url.startsWith("/storage/")) {
+                    const currentUrl = window.location.origin;
+                    const hostname = window.location.hostname;
+                    if (hostname.includes("hostinger") || hostname.includes("hostingersite.com") || currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                      return `${currentUrl}/api/public${item.media_url}`;
+                    } else {
+                      const API_URL = window.location.origin + "/api";
+                      return `${API_URL}${item.media_url}`;
+                    }
+                  }
+                  return item.media_url;
+                };
+                const mediaUrl = getMediaUrl();
+                
+                return (
+                  <div
+                    key={item.id}
+                    className="flex flex-col gap-2 rounded-lg border border-border/60 bg-background/80 p-4 transition hover:border-primary/40 hover:shadow-card overflow-hidden"
+                  >
+                    {mediaUrl && (
+                      <div className="w-full overflow-hidden rounded-md -mx-4 -mt-4 mb-2">
+                        {item.media_type === 'image' ? (
+                          <img
+                            src={mediaUrl}
+                            alt={item.title}
+                            className="w-full h-48 object-cover"
+                            onError={(e) => {
+                              console.error("❌ Erreur chargement image:", { url: mediaUrl, item });
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : item.media_type === 'video' ? (
+                          <video
+                            src={mediaUrl}
+                            controls
+                            className="w-full h-48 object-cover"
+                            onError={(e) => {
+                              console.error("❌ Erreur chargement vidéo:", { url: mediaUrl, item });
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : null}
+                      </div>
+                    )}
+                    <h3 className="text-lg font-semibold">{item.title}</h3>
+                    {item.description && (
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                    )}
+                    {item.url && item.url !== "#" && (
+                      <Button variant="link" className="p-0" asChild>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="gap-1 text-primary">
+                          Voir la publication
+                          <ArrowRight className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                );
+              })
             )}
           </CardContent>
         </Card>
@@ -102,25 +146,69 @@ const Publications = () => {
             ) : publications.partners.length === 0 ? (
               <p className="text-center text-muted-foreground">Aucun partenaire pour le moment.</p>
             ) : (
-              publications.partners.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col gap-2 rounded-lg border border-border/60 bg-background/80 p-4 transition hover:border-primary/40 hover:shadow-card"
-                >
-                  <h3 className="text-lg font-semibold">{item.name || item.title}</h3>
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                  )}
-                  {item.url && item.url !== "#" && (
-                    <Button variant="link" className="p-0" asChild>
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="gap-1 text-primary">
-                        Découvrir
-                        <ArrowRight className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              ))
+              publications.partners.map((item) => {
+                const getMediaUrl = () => {
+                  if (!item.media_url) return null;
+                  if (item.media_url.startsWith("http")) return item.media_url;
+                  if (item.media_url.startsWith("/storage/")) {
+                    const currentUrl = window.location.origin;
+                    const hostname = window.location.hostname;
+                    if (hostname.includes("hostinger") || hostname.includes("hostingersite.com") || currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                      return `${currentUrl}/api/public${item.media_url}`;
+                    } else {
+                      const API_URL = window.location.origin + "/api";
+                      return `${API_URL}${item.media_url}`;
+                    }
+                  }
+                  return item.media_url;
+                };
+                const mediaUrl = getMediaUrl();
+                
+                return (
+                  <div
+                    key={item.id}
+                    className="flex flex-col gap-2 rounded-lg border border-border/60 bg-background/80 p-4 transition hover:border-primary/40 hover:shadow-card overflow-hidden"
+                  >
+                    {mediaUrl && (
+                      <div className="w-full overflow-hidden rounded-md -mx-4 -mt-4 mb-2">
+                        {item.media_type === 'image' ? (
+                          <img
+                            src={mediaUrl}
+                            alt={item.name || item.title}
+                            className="w-full h-48 object-cover"
+                            onError={(e) => {
+                              console.error("❌ Erreur chargement image:", { url: mediaUrl, item });
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : item.media_type === 'video' ? (
+                          <video
+                            src={mediaUrl}
+                            controls
+                            className="w-full h-48 object-cover"
+                            onError={(e) => {
+                              console.error("❌ Erreur chargement vidéo:", { url: mediaUrl, item });
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : null}
+                      </div>
+                    )}
+                    <h3 className="text-lg font-semibold">{item.name || item.title}</h3>
+                    {item.description && (
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                    )}
+                    {item.url && item.url !== "#" && (
+                      <Button variant="link" className="p-0" asChild>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="gap-1 text-primary">
+                          Découvrir
+                          <ArrowRight className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                );
+              })
             )}
           </CardContent>
         </Card>

@@ -2,8 +2,24 @@ import api from "./api";
 
 // Actualités
 export const getNews = () => api.get("/admin/news");
-export const createNews = (data) => api.post("/admin/news", data);
-export const updateNews = (id, data) => api.put(`/admin/news/${id}`, data);
+export const createNews = (data) => {
+  if (data instanceof FormData) {
+    return api.post("/admin/news", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  return api.post("/admin/news", data);
+};
+export const updateNews = (id, data) => {
+  if (data instanceof FormData) {
+    // Pour FormData avec PUT, utiliser POST avec _method=PUT
+    data.append('_method', 'PUT');
+    return api.post(`/admin/news/${id}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  return api.put(`/admin/news/${id}`, data);
+};
 export const deleteNews = (id) => api.delete(`/admin/news/${id}`);
 export const toggleNewsVisibility = (id, visible) =>
   api.patch(`/admin/news/${id}/visibility`, { visible });
@@ -33,8 +49,24 @@ export const toggleVideoVisibility = (id, visible) =>
 
 // Publications
 export const getPublications = () => api.get("/admin/publications");
-export const createPublication = (type, data) => api.post(`/admin/publications/${type}`, data);
-export const updatePublication = (type, id, data) => api.put(`/admin/publications/${type}/${id}`, data);
+export const createPublication = (type, data) => {
+  if (data instanceof FormData) {
+    return api.post(`/admin/publications/${type}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  return api.post(`/admin/publications/${type}`, data);
+};
+export const updatePublication = (type, id, data) => {
+  if (data instanceof FormData) {
+    // Pour FormData avec PUT, utiliser POST avec _method=PUT
+    data.append('_method', 'PUT');
+    return api.post(`/admin/publications/${type}/${id}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  return api.put(`/admin/publications/${type}/${id}`, data);
+};
 export const deletePublication = (type, id) => api.delete(`/admin/publications/${type}/${id}`);
 export const togglePublicationVisibility = (type, id, visible) =>
   api.patch(`/admin/publications/${type}/${id}/visibility`, { visible });

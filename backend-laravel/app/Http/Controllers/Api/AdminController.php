@@ -38,7 +38,30 @@ class AdminController extends Controller
             'content' => 'required|string',
             'author' => 'nullable|string',
             'date' => 'nullable|date',
+            'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
         ]);
+        
+        $mediaUrl = null;
+        $mediaType = null;
+        
+        // Gérer l'upload du média (image ou vidéo)
+        if ($request->hasFile('media')) {
+            $file = $request->file('media');
+            $mimeType = $file->getMimeType();
+            
+            // Déterminer le type de média
+            if (str_starts_with($mimeType, 'image/')) {
+                $mediaType = 'image';
+                $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('photos', $filename, 'public');
+                $mediaUrl = '/storage/' . $path;
+            } elseif (str_starts_with($mimeType, 'video/')) {
+                $mediaType = 'video';
+                $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('videos', $filename, 'public');
+                $mediaUrl = '/storage/' . $path;
+            }
+        }
         
         $news = News::create([
             'title' => $request->title,
@@ -46,6 +69,8 @@ class AdminController extends Controller
             'author' => $request->author ?? 'CAJJ',
             'date' => $request->date ?? now(),
             'visible' => true,
+            'media_url' => $mediaUrl,
+            'media_type' => $mediaType,
         ]);
         
         return response()->json(['message' => 'Actualité ajoutée', 'news' => $news]);
@@ -55,7 +80,60 @@ class AdminController extends Controller
     {
         $news = News::findOrFail($id);
         
-        $news->update($request->only(['title', 'content', 'author', 'date', 'visible']));
+        $request->validate([
+            'title' => 'sometimes|required|string',
+            'content' => 'sometimes|required|string',
+            'author' => 'nullable|string',
+            'date' => 'nullable|date',
+            'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
+            'remove_media' => 'nullable|boolean',
+        ]);
+        
+        $updateData = $request->only(['title', 'content', 'author', 'date', 'visible']);
+        
+        // Gérer la suppression du média
+        if ($request->input('remove_media', false)) {
+            // Supprimer l'ancien fichier s'il existe
+            if ($news->media_url) {
+                $oldPath = str_replace('/storage/', '', $news->media_url);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $updateData['media_url'] = null;
+            $updateData['media_type'] = null;
+        }
+        
+        // Gérer l'upload d'un nouveau média
+        if ($request->hasFile('media')) {
+            // Supprimer l'ancien fichier s'il existe
+            if ($news->media_url) {
+                $oldPath = str_replace('/storage/', '', $news->media_url);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            
+            $file = $request->file('media');
+            $mimeType = $file->getMimeType();
+            
+            // Déterminer le type de média
+            if (str_starts_with($mimeType, 'image/')) {
+                $mediaType = 'image';
+                $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('photos', $filename, 'public');
+                $updateData['media_url'] = '/storage/' . $path;
+                $updateData['media_type'] = 'image';
+            } elseif (str_starts_with($mimeType, 'video/')) {
+                $mediaType = 'video';
+                $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('videos', $filename, 'public');
+                $updateData['media_url'] = '/storage/' . $path;
+                $updateData['media_type'] = 'video';
+            }
+        }
+        
+        $news->update($updateData);
         
         return response()->json(['message' => 'Actualité mise à jour', 'news' => $news]);
     }
@@ -240,7 +318,30 @@ class AdminController extends Controller
             'name' => 'required_if:type,partners|nullable|string',
             'description' => 'nullable|string',
             'url' => 'nullable|url',
+            'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
         ]);
+        
+        $mediaUrl = null;
+        $mediaType = null;
+        
+        // Gérer l'upload du média (image ou vidéo)
+        if ($request->hasFile('media')) {
+            $file = $request->file('media');
+            $mimeType = $file->getMimeType();
+            
+            // Déterminer le type de média
+            if (str_starts_with($mimeType, 'image/')) {
+                $mediaType = 'image';
+                $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('photos', $filename, 'public');
+                $mediaUrl = '/storage/' . $path;
+            } elseif (str_starts_with($mimeType, 'video/')) {
+                $mediaType = 'video';
+                $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('videos', $filename, 'public');
+                $mediaUrl = '/storage/' . $path;
+            }
+        }
         
         $publication = Publication::create([
             'type' => $type,
@@ -249,6 +350,8 @@ class AdminController extends Controller
             'description' => $request->description,
             'url' => $request->url,
             'visible' => true,
+            'media_url' => $mediaUrl,
+            'media_type' => $mediaType,
         ]);
         
         return response()->json(['message' => 'Publication ajoutée', 'publication' => $publication]);
@@ -261,7 +364,61 @@ class AdminController extends Controller
         }
         
         $publication = Publication::where('type', $type)->findOrFail($id);
-        $publication->update($request->only(['title', 'name', 'description', 'url', 'visible']));
+        
+        $request->validate([
+            'title' => 'sometimes|required_if:type,cajj|nullable|string',
+            'name' => 'sometimes|required_if:type,partners|nullable|string',
+            'description' => 'nullable|string',
+            'url' => 'nullable|url',
+            'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
+            'remove_media' => 'nullable|boolean',
+        ]);
+        
+        $updateData = $request->only(['title', 'name', 'description', 'url', 'visible']);
+        
+        // Gérer la suppression du média
+        if ($request->input('remove_media', false)) {
+            // Supprimer l'ancien fichier s'il existe
+            if ($publication->media_url) {
+                $oldPath = str_replace('/storage/', '', $publication->media_url);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $updateData['media_url'] = null;
+            $updateData['media_type'] = null;
+        }
+        
+        // Gérer l'upload d'un nouveau média
+        if ($request->hasFile('media')) {
+            // Supprimer l'ancien fichier s'il existe
+            if ($publication->media_url) {
+                $oldPath = str_replace('/storage/', '', $publication->media_url);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            
+            $file = $request->file('media');
+            $mimeType = $file->getMimeType();
+            
+            // Déterminer le type de média
+            if (str_starts_with($mimeType, 'image/')) {
+                $mediaType = 'image';
+                $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('photos', $filename, 'public');
+                $updateData['media_url'] = '/storage/' . $path;
+                $updateData['media_type'] = 'image';
+            } elseif (str_starts_with($mimeType, 'video/')) {
+                $mediaType = 'video';
+                $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('videos', $filename, 'public');
+                $updateData['media_url'] = '/storage/' . $path;
+                $updateData['media_type'] = 'video';
+            }
+        }
+        
+        $publication->update($updateData);
         
         return response()->json(['message' => 'Publication mise à jour', 'publication' => $publication]);
     }
