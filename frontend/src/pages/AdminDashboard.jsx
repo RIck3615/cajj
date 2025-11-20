@@ -99,63 +99,73 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="container flex h-16 items-center justify-between">
-          <h1 className="text-xl font-bold text-primary">Administration CAJJ</h1>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Déconnexion
+        <div className="container flex h-16 items-center justify-between px-4">
+          <h1 className="text-lg font-bold text-primary sm:text-xl">Administration CAJJ</h1>
+          <Button variant="outline" onClick={handleLogout} size="sm" className="text-xs sm:text-sm">
+            <LogOut className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Déconnexion</span>
+            <span className="sm:hidden">Déco</span>
           </Button>
         </div>
       </header>
 
-      <div className="container py-8">
-        <div className="mb-6 flex gap-2 border-b">
+      <div className="container py-4 sm:py-8 px-4">
+        <div className="mb-6 flex gap-2 border-b overflow-x-auto pb-2">
           <Button
             variant={activeTab === "news" ? "default" : "ghost"}
             onClick={() => setActiveTab("news")}
-            className="rounded-b-none"
+            className="rounded-b-none whitespace-nowrap text-xs sm:text-sm"
+            size="sm"
           >
-            <Newspaper className="mr-2 h-4 w-4" />
-            Actualités
+            <Newspaper className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Actualités</span>
+            <span className="sm:hidden">Actu</span>
           </Button>
           <Button
             variant={activeTab === "photos" ? "default" : "ghost"}
             onClick={() => setActiveTab("photos")}
-            className="rounded-b-none"
+            className="rounded-b-none whitespace-nowrap text-xs sm:text-sm"
+            size="sm"
           >
-            <Image className="mr-2 h-4 w-4" />
+            <Image className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
             Photos
           </Button>
           <Button
             variant={activeTab === "videos" ? "default" : "ghost"}
             onClick={() => setActiveTab("videos")}
-            className="rounded-b-none"
+            className="rounded-b-none whitespace-nowrap text-xs sm:text-sm"
+            size="sm"
           >
-            <Video className="mr-2 h-4 w-4" />
+            <Video className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
             Vidéos
           </Button>
           <Button
             variant={activeTab === "publications" ? "default" : "ghost"}
             onClick={() => setActiveTab("publications")}
-            className="rounded-b-none"
+            className="rounded-b-none whitespace-nowrap text-xs sm:text-sm"
+            size="sm"
           >
-            <BookOpen className="mr-2 h-4 w-4" />
-            Publications
+            <BookOpen className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Publications</span>
+            <span className="sm:hidden">Pub</span>
           </Button>
           <Button
             variant={activeTab === "about" ? "default" : "ghost"}
             onClick={() => setActiveTab("about")}
-            className="rounded-b-none"
+            className="rounded-b-none whitespace-nowrap text-xs sm:text-sm"
+            size="sm"
           >
-            <Users className="mr-2 h-4 w-4" />
-            Nous connaître
+            <Users className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Nous connaître</span>
+            <span className="sm:hidden">À propos</span>
           </Button>
           <Button
             variant={activeTab === "actions" ? "default" : "ghost"}
             onClick={() => setActiveTab("actions")}
-            className="rounded-b-none"
+            className="rounded-b-none whitespace-nowrap text-xs sm:text-sm"
+            size="sm"
           >
-            <Target className="mr-2 h-4 w-4" />
+            <Target className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
             Actions
           </Button>
         </div>
@@ -241,9 +251,9 @@ const NewsManager = ({ news, onRefresh, loading }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Gestion des actualités</h2>
-        <Button onClick={() => setShowForm(!showForm)}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-semibold sm:text-2xl">Gestion des actualités</h2>
+        <Button onClick={() => setShowForm(!showForm)} size="sm" className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Ajouter
         </Button>
@@ -285,11 +295,11 @@ const NewsManager = ({ news, onRefresh, loading }) => {
                   className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
                 />
               </div>
-              <div className="flex gap-2">
-                <Button type="submit" disabled={submitting}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                   {submitting ? "Enregistrement..." : "Enregistrer"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="w-full sm:w-auto">
                   Annuler
                 </Button>
               </div>
@@ -307,25 +317,26 @@ const NewsManager = ({ news, onRefresh, loading }) => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           {news.map((item) => (
             <Card key={item.id}>
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-lg">{item.title}</CardTitle>
-                      <Badge variant={item.visible ? "default" : "secondary"}>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <CardTitle className="text-base sm:text-lg break-words">{item.title}</CardTitle>
+                      <Badge variant={item.visible ? "default" : "secondary"} className="text-xs">
                         {item.visible ? "Publié" : "Masqué"}
                       </Badge>
                     </div>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEdit(item)}
                       title="Modifier"
+                      className="h-8 w-8 p-0"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -333,7 +344,7 @@ const NewsManager = ({ news, onRefresh, loading }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleToggleVisibility(item.id, item.visible)}
-                      className={item.visible ? "text-green-600" : "text-muted-foreground"}
+                      className={`h-8 w-8 p-0 ${item.visible ? "text-green-600" : "text-muted-foreground"}`}
                       title={item.visible ? "Masquer" : "Publier"}
                     >
                       {item.visible ? "👁️" : "👁️‍🗨️"}
@@ -342,7 +353,7 @@ const NewsManager = ({ news, onRefresh, loading }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(item.id)}
-                      className="text-destructive"
+                      className="h-8 w-8 p-0 text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -441,9 +452,9 @@ const PhotosManager = ({ photos, onRefresh, loading }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Gestion des photos</h2>
-        <Button onClick={() => setShowForm(!showForm)}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-semibold sm:text-2xl">Gestion des photos</h2>
+        <Button onClick={() => setShowForm(!showForm)} size="sm" className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Ajouter
         </Button>
@@ -487,11 +498,11 @@ const PhotosManager = ({ photos, onRefresh, loading }) => {
                   />
                 </div>
               )}
-              <div className="flex gap-2">
-                <Button type="submit" disabled={submitting}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                   {submitting ? "Enregistrement..." : editingId ? "Modifier" : "Enregistrer"}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>
+                <Button type="button" variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
                   Annuler
                 </Button>
               </div>
@@ -509,16 +520,22 @@ const PhotosManager = ({ photos, onRefresh, loading }) => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {photos.map((photo) => {
-            // Construire l'URL correctement : /storage/ est dans public/, pas dans /api/
+            // Construire l'URL correctement pour Hostinger
             let imageUrl;
             if (photo.url.startsWith("http")) {
               imageUrl = photo.url;
             } else if (photo.url.startsWith("/storage/")) {
-              // Pour /storage/, utiliser l'URL de base sans /api
-              const baseUrl = API_URL.replace('/api', '');
-              imageUrl = `${baseUrl}${photo.url}`;
+              // Pour /storage/, utiliser le chemin direct sur Hostinger
+              const currentUrl = window.location.origin;
+              if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                // Sur Hostinger, les fichiers sont accessibles directement via /api/public/storage/
+                imageUrl = `${currentUrl}/api/public${photo.url}`;
+              } else {
+                // En développement, utiliser l'API Laravel
+                imageUrl = `${API_URL}${photo.url}`;
+              }
             } else {
               imageUrl = `${API_URL}${photo.url}`;
             }
@@ -562,24 +579,25 @@ const PhotosManager = ({ photos, onRefresh, loading }) => {
                   </div>
                 </div>
               <CardHeader>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CardTitle className="text-sm">{photo.title}</CardTitle>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <CardTitle className="text-sm break-words">{photo.title}</CardTitle>
                       <Badge variant={photo.visible ? "default" : "secondary"} className="text-xs">
                         {photo.visible ? "Publié" : "Masqué"}
                       </Badge>
                     </div>
                     {photo.description && (
-                      <p className="text-xs text-muted-foreground">{photo.description}</p>
+                      <p className="text-xs text-muted-foreground break-words">{photo.description}</p>
                     )}
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEdit(photo)}
                       title="Modifier"
+                      className="h-8 w-8 p-0"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -587,7 +605,7 @@ const PhotosManager = ({ photos, onRefresh, loading }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleToggleVisibility(photo.id, photo.visible)}
-                      className={photo.visible ? "text-green-600" : "text-muted-foreground"}
+                      className={`h-8 w-8 p-0 ${photo.visible ? "text-green-600" : "text-muted-foreground"}`}
                       title={photo.visible ? "Masquer" : "Publier"}
                     >
                       {photo.visible ? "👁️" : "👁️‍🗨️"}
@@ -596,7 +614,7 @@ const PhotosManager = ({ photos, onRefresh, loading }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(photo.id)}
-                      className="text-destructive"
+                      className="h-8 w-8 p-0 text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -710,9 +728,9 @@ const VideosManager = ({ videos, onRefresh, loading }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Gestion des vidéos</h2>
-        <Button onClick={() => setShowForm(!showForm)}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-semibold sm:text-2xl">Gestion des vidéos</h2>
+        <Button onClick={() => setShowForm(!showForm)} size="sm" className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Ajouter
         </Button>
@@ -799,11 +817,11 @@ const VideosManager = ({ videos, onRefresh, loading }) => {
                   />
                 </div>
               )}
-              <div className="flex gap-2">
-                <Button type="submit" disabled={submitting}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                   {submitting ? "Enregistrement..." : editingId ? "Modifier" : "Enregistrer"}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>
+                <Button type="button" variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
                   Annuler
                 </Button>
               </div>
@@ -821,28 +839,29 @@ const VideosManager = ({ videos, onRefresh, loading }) => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           {videos.map((video) => (
             <Card key={video.id}>
               <CardHeader>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CardTitle className="text-lg">{video.title}</CardTitle>
-                      <Badge variant={video.visible ? "default" : "secondary"}>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <CardTitle className="text-base sm:text-lg break-words">{video.title}</CardTitle>
+                      <Badge variant={video.visible ? "default" : "secondary"} className="text-xs">
                         {video.visible ? "Publié" : "Masqué"}
                       </Badge>
                     </div>
                     {video.description && (
-                      <p className="text-sm text-muted-foreground">{video.description}</p>
+                      <p className="text-sm text-muted-foreground break-words">{video.description}</p>
                     )}
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEdit(video)}
                       title="Modifier"
+                      className="h-8 w-8 p-0"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -850,7 +869,7 @@ const VideosManager = ({ videos, onRefresh, loading }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleToggleVisibility(video.id, video.visible)}
-                      className={video.visible ? "text-green-600" : "text-muted-foreground"}
+                      className={`h-8 w-8 p-0 ${video.visible ? "text-green-600" : "text-muted-foreground"}`}
                       title={video.visible ? "Masquer" : "Publier"}
                     >
                       {video.visible ? "👁️" : "👁️‍🗨️"}
@@ -859,7 +878,7 @@ const VideosManager = ({ videos, onRefresh, loading }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(video.id)}
-                      className="text-destructive"
+                      className="h-8 w-8 p-0 text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -878,7 +897,19 @@ const VideosManager = ({ videos, onRefresh, loading }) => {
                   </a>
                 ) : (
                   <video
-                    src={`${API_URL}${video.url}`}
+                    src={(() => {
+                      if (video.url.startsWith("/storage/")) {
+                        const currentUrl = window.location.origin;
+                        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                          // Sur Hostinger, les fichiers sont accessibles directement via /api/public/storage/
+                          return `${currentUrl}/api/public${video.url}`;
+                        } else {
+                          // En développement, utiliser l'API Laravel
+                          return `${API_URL}${video.url}`;
+                        }
+                      }
+                      return `${API_URL}${video.url}`;
+                    })()}
                     controls
                     className="w-full rounded-md"
                     style={{ maxHeight: "300px" }}
@@ -963,22 +994,23 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Gestion des publications</h2>
-        <Button onClick={() => setShowForm(!showForm)}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-semibold sm:text-2xl">Gestion des publications</h2>
+        <Button onClick={() => setShowForm(!showForm)} size="sm" className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Ajouter
         </Button>
       </div>
 
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-2 border-b overflow-x-auto pb-2">
         <Button
           variant={activeType === "cajj" ? "default" : "ghost"}
           onClick={() => {
             setActiveType("cajj");
             handleCancel();
           }}
-          className="rounded-b-none"
+          className="rounded-b-none whitespace-nowrap text-xs sm:text-sm"
+          size="sm"
         >
           Publications CAJJ
         </Button>
@@ -988,7 +1020,8 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
             setActiveType("partners");
             handleCancel();
           }}
-          className="rounded-b-none"
+          className="rounded-b-none whitespace-nowrap text-xs sm:text-sm"
+          size="sm"
         >
           Partenaires
         </Button>
@@ -1047,11 +1080,11 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                   placeholder="https://..."
                 />
               </div>
-              <div className="flex gap-2">
-                <Button type="submit" disabled={submitting}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                   {submitting ? "Enregistrement..." : editingId ? "Modifier" : "Enregistrer"}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>
+                <Button type="button" variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
                   Annuler
                 </Button>
               </div>
@@ -1069,38 +1102,39 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           {currentPublications.map((item) => (
             <Card key={item.id}>
               <CardHeader>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CardTitle className="text-lg">{item.title || item.name}</CardTitle>
-                      <Badge variant={item.visible ? "default" : "secondary"}>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <CardTitle className="text-base sm:text-lg break-words">{item.title || item.name}</CardTitle>
+                      <Badge variant={item.visible ? "default" : "secondary"} className="text-xs">
                         {item.visible ? "Publié" : "Masqué"}
                       </Badge>
                     </div>
                     {item.description && (
-                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                      <p className="text-sm text-muted-foreground break-words">{item.description}</p>
                     )}
                     {item.url && (
                       <a
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-primary hover:underline mt-1 block"
+                        className="text-xs text-primary hover:underline mt-1 block break-all"
                       >
                         {item.url}
                       </a>
                     )}
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEdit(item)}
                       title="Modifier"
+                      className="h-8 w-8 p-0"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -1108,7 +1142,7 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleToggleVisibility(item.id, item.visible)}
-                      className={item.visible ? "text-green-600" : "text-muted-foreground"}
+                      className={`h-8 w-8 p-0 ${item.visible ? "text-green-600" : "text-muted-foreground"}`}
                       title={item.visible ? "Masquer" : "Publier"}
                     >
                       {item.visible ? "👁️" : "👁️‍🗨️"}
@@ -1117,7 +1151,7 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(item.id)}
-                      className="text-destructive"
+                      className="h-8 w-8 p-0 text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -1168,8 +1202,8 @@ const ActionsManager = ({ actions, onRefresh, loading }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Gestion des actions</h2>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-semibold sm:text-2xl">Gestion des actions</h2>
       </div>
 
       {loading ? (
@@ -1181,13 +1215,13 @@ const ActionsManager = ({ actions, onRefresh, loading }) => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           {actions.map((action) => (
             <Card key={action.id}>
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{action.title}</CardTitle>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base sm:text-lg break-words">{action.title}</CardTitle>
                     <p className="text-xs text-muted-foreground mt-1">
                       ID: {action.action_id} • Ordre: {action.order}
                     </p>
@@ -1198,6 +1232,7 @@ const ActionsManager = ({ actions, onRefresh, loading }) => {
                       size="sm"
                       onClick={() => handleEdit(action)}
                       title="Modifier"
+                      className="h-8 w-8 p-0 flex-shrink-0"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -1236,11 +1271,11 @@ const ActionsManager = ({ actions, onRefresh, loading }) => {
                         className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <Button type="submit" disabled={submitting}>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                         {submitting ? "Enregistrement..." : "Enregistrer"}
                       </Button>
-                      <Button type="button" variant="outline" onClick={handleCancel}>
+                      <Button type="button" variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
                         Annuler
                       </Button>
                     </div>
@@ -1295,8 +1330,8 @@ const AboutManager = ({ about, onRefresh, loading }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Gestion de la section "Nous connaître"</h2>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-semibold sm:text-2xl">Gestion de la section "Nous connaître"</h2>
       </div>
 
       {loading ? (
@@ -1306,11 +1341,11 @@ const AboutManager = ({ about, onRefresh, loading }) => {
           {sections.map((section) => (
             <Card key={section.id} className="border-border/60">
               <CardHeader>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl mb-2">{section.title}</CardTitle>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-lg sm:text-xl mb-2 break-words">{section.title}</CardTitle>
                     {editingId !== section.id ? (
-                      <CardDescription className="text-sm whitespace-pre-line">
+                      <CardDescription className="text-sm whitespace-pre-line break-words">
                         {section.content}
                       </CardDescription>
                     ) : (
@@ -1335,11 +1370,11 @@ const AboutManager = ({ about, onRefresh, loading }) => {
                             required
                           />
                         </div>
-                        <div className="flex gap-2">
-                          <Button type="submit" disabled={submitting}>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                             {submitting ? "Enregistrement..." : "Enregistrer"}
                           </Button>
-                          <Button type="button" variant="outline" onClick={handleCancel}>
+                          <Button type="button" variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
                             Annuler
                           </Button>
                         </div>
@@ -1352,6 +1387,7 @@ const AboutManager = ({ about, onRefresh, loading }) => {
                       size="sm"
                       onClick={() => handleEdit(section)}
                       title="Modifier"
+                      className="h-8 w-8 p-0 flex-shrink-0"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>

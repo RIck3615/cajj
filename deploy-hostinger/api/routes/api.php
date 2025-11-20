@@ -8,6 +8,22 @@ use App\Http\Controllers\Api\AdminController;
 // Route de santé (accessible sur /api)
 Route::get('/', [PublicController::class, 'health']);
 
+// Route pour servir les fichiers storage
+Route::get('/storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    
+    $mimeType = mime_content_type($filePath);
+    $fileContent = file_get_contents($filePath);
+    
+    return response($fileContent, 200)
+        ->header('Content-Type', $mimeType)
+        ->header('Cache-Control', 'public, max-age=31536000');
+})->where('path', '.*');
+
 // Routes publiques
 Route::get('/about', [PublicController::class, 'about']);
 Route::get('/actions', [PublicController::class, 'actions']);

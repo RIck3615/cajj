@@ -77,9 +77,19 @@ const Galerie = () => {
                     </Button>
                   ) : (
                     <video
-                      src={item.url.startsWith("/storage/") 
-                        ? `${API_URL.replace('/api', '')}${item.url}`
-                        : `${API_URL}${item.url}`}
+                      src={(() => {
+                        if (item.url.startsWith("/storage/")) {
+                          const currentUrl = window.location.origin;
+                          if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                            // Sur Hostinger, les fichiers sont accessibles directement via /api/public/storage/
+                            return `${currentUrl}/api/public${item.url}`;
+                          } else {
+                            // En développement, utiliser l'API Laravel
+                            return `${API_URL}${item.url}`;
+                          }
+                        }
+                        return `${API_URL}${item.url}`;
+                      })()}
                       controls
                       className="w-full rounded-md"
                       style={{ maxHeight: "300px" }}
@@ -109,14 +119,20 @@ const Galerie = () => {
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {gallery.photos.map((item) => {
-                  // Construire l'URL correctement : /storage/ est dans public/, pas dans /api/
+                  // Construire l'URL correctement pour Hostinger
                   let imageUrl;
                   if (item.url.startsWith("http")) {
                     imageUrl = item.url;
                   } else if (item.url.startsWith("/storage/")) {
-                    // Pour /storage/, utiliser l'URL de base sans /api
-                    const baseUrl = API_URL.replace('/api', '');
-                    imageUrl = `${baseUrl}${item.url}`;
+                    // Pour /storage/, utiliser le chemin direct sur Hostinger
+                    const currentUrl = window.location.origin;
+                    if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com")) {
+                      // Sur Hostinger, les fichiers sont accessibles directement via /api/public/storage/
+                      imageUrl = `${currentUrl}/api/public${item.url}`;
+                    } else {
+                      // En développement, utiliser l'API Laravel
+                      imageUrl = `${API_URL}${item.url}`;
+                    }
                   } else {
                     imageUrl = `${API_URL}${item.url}`;
                   }
