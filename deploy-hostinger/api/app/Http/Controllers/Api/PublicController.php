@@ -20,7 +20,7 @@ class PublicController extends Controller
             'message' => 'API CAJJ opérationnelle',
         ]);
     }
-    
+
     public function about()
     {
         $sections = AboutSection::all()->map(function ($section) {
@@ -30,10 +30,10 @@ class PublicController extends Controller
                 'content' => $section->content,
             ];
         });
-        
+
         return response()->json(['sections' => $sections]);
     }
-    
+
     public function actions()
     {
         $actions = Action::orderBy('order', 'asc')->get()->map(function ($action) {
@@ -43,10 +43,10 @@ class PublicController extends Controller
                 'description' => $action->description,
             ];
         });
-        
+
         return response()->json($actions);
     }
-    
+
     public function publications()
     {
         $cajj = Publication::where('type', 'cajj')
@@ -58,9 +58,11 @@ class PublicController extends Controller
                     'title' => $pub->title,
                     'description' => $pub->description,
                     'url' => $pub->url,
+                    'media_url' => $pub->media_url,
+                    'media_type' => $pub->media_type,
                 ];
             });
-        
+
         $partners = Publication::where('type', 'partners')
             ->where('visible', true)
             ->get()
@@ -70,15 +72,17 @@ class PublicController extends Controller
                     'name' => $pub->name,
                     'description' => $pub->description,
                     'url' => $pub->url,
+                    'media_url' => $pub->media_url,
+                    'media_type' => $pub->media_type,
                 ];
             });
-        
+
         return response()->json([
             'cajj' => $cajj,
             'partners' => $partners,
         ]);
     }
-    
+
     public function news()
     {
         $news = News::where('visible', true)
@@ -95,10 +99,10 @@ class PublicController extends Controller
                     'media_type' => $item->media_type,
                 ];
             });
-        
+
         return response()->json($news);
     }
-    
+
     public function gallery()
     {
         $photos = Photo::where('visible', true)
@@ -112,7 +116,7 @@ class PublicController extends Controller
                     'url' => $photo->url,
                 ];
             });
-        
+
         $videos = Video::where('visible', true)
             ->orderBy('created_at', 'desc')
             ->get()
@@ -124,13 +128,13 @@ class PublicController extends Controller
                     'url' => $video->url,
                 ];
             });
-        
+
         return response()->json([
             'photos' => $photos,
             'videos' => $videos,
         ]);
     }
-    
+
     public function contact(Request $request)
     {
         $request->validate([
@@ -138,7 +142,7 @@ class PublicController extends Controller
             'email' => 'required|email',
             'message' => 'required|string',
         ]);
-        
+
         // Ici, vous pouvez ajouter l'envoi d'email ou la sauvegarde en base
         return response()->json([
             'status' => 'received',

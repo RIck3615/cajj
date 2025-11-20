@@ -309,39 +309,173 @@ class AdminController extends Controller
     
     public function createPublication(Request $request, $type)
     {
-        if (!in_array($type, ['cajj', 'partners'])) {
-            return response()->json(['error' => 'Type invalide. Utilisez \'cajj\' ou \'partners\''], 400);
+        try {
+            if (!in_array($type, ['cajj', 'partners'])) {
+                return response()->json(['error' => 'Type invalide. Utilisez \'cajj\' ou \'partners\''], 400);
+            }
+            
+            // Validation selon le type
+            if ($type === 'cajj') {
+                $request->validate([
+                    'title' => 'required|string',
+                    'description' => 'nullable|string',
+                    'url' => 'nullable|url',
+                    'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
+                ]);
+            } else {
+                $request->validate([
+                    'name' => 'required|string',
+                    'description' => 'nullable|string',
+                    'url' => 'nullable|url',
+                    'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
+                ]);
+            }
+            
+            $mediaUrl = null;
+            $mediaType = null;
+            
+            // Gérer l'upload du média (image ou vidéo)
+            if ($request->hasFile('media')) {
+                try {
+                    $file = $request->file('media');
+                    $mimeType = $file->getMimeType();
+                    
+                    // Déterminer le type de média
+                    if (str_starts_with($mimeType, 'image/')) {
+                        $mediaType = 'image';
+                        $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs('photos', $filename, 'public');
+                        $mediaUrl = '/storage/' . $path;
+                    } elseif (str_starts_with($mimeType, 'video/')) {
+                        $mediaType = 'video';
+                        $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs('videos', $filename, 'public');
+                        $mediaUrl = '/storage/' . $path;
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Erreur upload média publication: ' . $e->getMessage());
+                    return response()->json([
+                        'error' => 'Erreur lors de l\'upload du fichier',
+                        'message' => $e->getMessage()
+                    ], 500);
+                }
+            }
+            
+            $publication = Publication::create([
+                'type' => $type,
+                'title' => $request->title ?? null,
+                'name' => $request->name ?? null,
+                'description' => $request->description ?? null,
+                'url' => $request->url ?? null,
+                'visible' => true,
+                'media_url' => $mediaUrl,
+                'media_type' => $mediaType,
+            ]);
+            
+            return response()->json(['message' => 'Publication ajoutée', 'publication' => $publication]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erreur validation publication: ' . json_encode($e->errors()));
+            return response()->json([
+                'error' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Erreur createPublication: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Erreur lors de la création de la publication',
+                'message' => $e->getMessage()
+            ], 500);
         }
-        
-        $request->validate([
-            'title' => 'required_if:type,cajj|nullable|string',
-            'name' => 'required_if:type,partners|nullable|string',
-            'description' => 'nullable|string',
-            'url' => 'nullable|url',
-        ]);
-        
-        $publication = Publication::create([
-            'type' => $type,
-            'title' => $request->title,
-            'name' => $request->name,
-            'description' => $request->description,
-            'url' => $request->url,
-            'visible' => true,
-        ]);
-        
-        return response()->json(['message' => 'Publication ajoutée', 'publication' => $publication]);
     }
     
     public function updatePublication(Request $request, $type, $id)
     {
-        if (!in_array($type, ['cajj', 'partners'])) {
-            return response()->json(['error' => 'Type invalide'], 400);
+        try {
+            if (!in_array($type, ['cajj', 'partners'])) {
+                return response()->json(['error' => 'Type invalide'], 400);
+            }
+            
+            $publication = Publication::where('type', $type)->findOrFail($id);
+            
+            // Validation selon le type
+            if ($type === 'cajj') {
+                $request->validate([
+                    'title' => 'sometimes|required|string',
+                    'description' => 'nullable|string',
+                    'url' => 'nullable|url',
+                    'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
+                    'remove_media' => 'nullable|boolean',
+                ]);
+            } else {
+                $request->validate([
+                    'name' => 'sometimes|required|string',
+                    'description' => 'nullable|string',
+                    'url' => 'nullable|url',
+                    'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
+                    'remove_media' => 'nullable|boolean',
+                ]);
+            }
+        
+            $updateData = $request->only(['title', 'name', 'description', 'url', 'visible']);
+            
+            // Gérer la suppression du média
+            if ($request->input('remove_media', false)) {
+                // Supprimer l'ancien fichier s'il existe
+                if ($publication->media_url) {
+                    $oldPath = str_replace('/storage/', '', $publication->media_url);
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
+                }
+                $updateData['media_url'] = null;
+                $updateData['media_type'] = null;
+            }
+            
+            // Gérer l'upload d'un nouveau média
+            if ($request->hasFile('media')) {
+                // Supprimer l'ancien fichier s'il existe
+                if ($publication->media_url) {
+                    $oldPath = str_replace('/storage/', '', $publication->media_url);
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
+                }
+                
+                $file = $request->file('media');
+                $mimeType = $file->getMimeType();
+                
+                // Déterminer le type de média
+                if (str_starts_with($mimeType, 'image/')) {
+                    $mediaType = 'image';
+                    $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('photos', $filename, 'public');
+                    $updateData['media_url'] = '/storage/' . $path;
+                    $updateData['media_type'] = 'image';
+                } elseif (str_starts_with($mimeType, 'video/')) {
+                    $mediaType = 'video';
+                    $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('videos', $filename, 'public');
+                    $updateData['media_url'] = '/storage/' . $path;
+                    $updateData['media_type'] = 'video';
+                }
+            }
+            
+            $publication->update($updateData);
+            
+            return response()->json(['message' => 'Publication mise à jour', 'publication' => $publication]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erreur validation publication: ' . json_encode($e->errors()));
+            return response()->json([
+                'error' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Erreur updatePublication: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Erreur lors de la mise à jour de la publication',
+                'message' => $e->getMessage()
+            ], 500);
         }
-        
-        $publication = Publication::where('type', $type)->findOrFail($id);
-        $publication->update($request->only(['title', 'name', 'description', 'url', 'visible']));
-        
-        return response()->json(['message' => 'Publication mise à jour', 'publication' => $publication]);
     }
     
     public function deletePublication($type, $id)

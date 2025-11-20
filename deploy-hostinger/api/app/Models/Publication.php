@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Publication extends Model
 {
-    protected $fillable = ['type', 'title', 'name', 'description', 'url', 'visible'];
+    protected $fillable = ['type', 'title', 'name', 'description', 'url', 'visible', 'media_url', 'media_type'];
     
     protected $casts = [
         'visible' => 'boolean',

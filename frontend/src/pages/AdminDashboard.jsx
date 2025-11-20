@@ -1473,47 +1473,17 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                     ) : null}
                   </div>
                 )}
-                    {item.url && (
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary hover:underline mt-1 block break-all"
-                      >
-                        {item.url}
-                      </a>
-                    )}
-                  </div>
-                  <div className="flex gap-1 flex-shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(item)}
-                      title="Modifier"
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleVisibility(item.id, item.visible)}
-                      className={`h-8 w-8 p-0 ${item.visible ? "text-green-600" : "text-muted-foreground"}`}
-                      title={item.visible ? "Masquer" : "Publier"}
-                    >
-                      {item.visible ? "👁️" : "👁️‍🗨️"}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(item.id)}
-                      className="h-8 w-8 p-0 text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
+                {item.url && (
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline mt-1 block break-all"
+                  >
+                    {item.url}
+                  </a>
+                )}
+              </CardContent>
             </Card>
           ))}
         </div>

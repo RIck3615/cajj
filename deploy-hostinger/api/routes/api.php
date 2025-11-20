@@ -70,7 +70,7 @@ Route::prefix('admin')->middleware('jwt.auth')->group(function () {
     // Publications
     Route::get('/publications', [AdminController::class, 'getPublications']);
     Route::post('/publications/{type}', [AdminController::class, 'createPublication']);
-    Route::put('/publications/{type}/{id}', [AdminController::class, 'updatePublication']);
+    Route::match(['put', 'post'], '/publications/{type}/{id}', [AdminController::class, 'updatePublication']); // POST pour FormData avec _method=PUT
     Route::delete('/publications/{type}/{id}', [AdminController::class, 'deletePublication']);
     Route::patch('/publications/{type}/{id}/visibility', [AdminController::class, 'togglePublicationVisibility']);
 
