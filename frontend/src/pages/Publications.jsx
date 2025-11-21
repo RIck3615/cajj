@@ -125,6 +125,31 @@ const Publications = () => {
                         </a>
                       </Button>
                     )}
+                    {item.pdf_url && (
+                      <Button variant="outline" size="sm" className="mt-2" asChild>
+                        <a
+                          href={(() => {
+                            const currentUrl = window.location.origin;
+                            if (item.pdf_url.startsWith("/storage/")) {
+                              if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                                return `${currentUrl}/api/public${item.pdf_url}`;
+                              } else {
+                                return `${window.location.origin}/api${item.pdf_url}`;
+                              }
+                            }
+                            return item.pdf_url;
+                          })()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="gap-1"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          Télécharger le PDF
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 );
               })
@@ -205,6 +230,31 @@ const Publications = () => {
                         <a href={item.url} target="_blank" rel="noopener noreferrer" className="gap-1 text-primary">
                           Découvrir
                           <ArrowRight className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                    {item.pdf_url && (
+                      <Button variant="outline" size="sm" className="mt-2" asChild>
+                        <a
+                          href={(() => {
+                            const currentUrl = window.location.origin;
+                            if (item.pdf_url.startsWith("/storage/")) {
+                              if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                                return `${currentUrl}/api/public${item.pdf_url}`;
+                              } else {
+                                return `${window.location.origin}/api${item.pdf_url}`;
+                              }
+                            }
+                            return item.pdf_url;
+                          })()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="gap-1"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          Télécharger le PDF
                         </a>
                       </Button>
                     )}

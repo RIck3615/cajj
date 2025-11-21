@@ -73,6 +73,7 @@ Route::get('/storage/{path}', function ($path) {
                 'mov' => 'video/quicktime',
                 'avi' => 'video/x-msvideo',
                 'webm' => 'video/webm',
+                'pdf' => 'application/pdf',
             ];
             $mimeType = $mimeTypes[$extension] ?? 'application/octet-stream';
         }
@@ -113,6 +114,7 @@ Route::get('/actions', [PublicController::class, 'actions']);
 Route::get('/publications', [PublicController::class, 'publications']);
 Route::get('/news', [PublicController::class, 'news']);
 Route::get('/gallery', [PublicController::class, 'gallery']);
+Route::get('/documentations', [PublicController::class, 'documentations']);
 Route::post('/contact', [PublicController::class, 'contact']);
 
 // Routes d'authentification
@@ -164,4 +166,11 @@ Route::prefix('admin')->middleware('jwt.auth')->group(function () {
     // Actions
     Route::get('/actions', [AdminController::class, 'getActions']);
     Route::put('/actions/{id}', [AdminController::class, 'updateAction']);
+
+    // Documentation
+    Route::get('/documentations', [AdminController::class, 'getDocumentations']);
+    Route::post('/documentations', [AdminController::class, 'createDocumentation']);
+    Route::match(['put', 'post'], '/documentations/{id}', [AdminController::class, 'updateDocumentation']); // POST pour FormData avec _method=PUT
+    Route::delete('/documentations/{id}', [AdminController::class, 'deleteDocumentation']);
+    Route::patch('/documentations/{id}/visibility', [AdminController::class, 'toggleDocumentationVisibility']);
 });

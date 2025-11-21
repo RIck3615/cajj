@@ -10,6 +10,7 @@ use App\Models\Video;
 use App\Models\Publication;
 use App\Models\AboutSection;
 use App\Models\Action;
+use App\Models\Documentation;
 
 class PublicController extends Controller
 {
@@ -60,6 +61,7 @@ class PublicController extends Controller
                     'url' => $pub->url,
                     'media_url' => $pub->media_url,
                     'media_type' => $pub->media_type,
+                    'pdf_url' => $pub->pdf_url,
                 ];
             });
 
@@ -74,6 +76,7 @@ class PublicController extends Controller
                     'url' => $pub->url,
                     'media_url' => $pub->media_url,
                     'media_type' => $pub->media_type,
+                    'pdf_url' => $pub->pdf_url,
                 ];
             });
 
@@ -97,6 +100,7 @@ class PublicController extends Controller
                     'author' => $item->author,
                     'media_url' => $item->media_url,
                     'media_type' => $item->media_type,
+                    'pdf_url' => $item->pdf_url,
                 ];
             });
 
@@ -133,6 +137,24 @@ class PublicController extends Controller
             'photos' => $photos,
             'videos' => $videos,
         ]);
+    }
+
+    public function documentations()
+    {
+        $documentations = Documentation::where('visible', true)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($doc) {
+                return [
+                    'id' => (string) $doc->id,
+                    'title' => $doc->title,
+                    'description' => $doc->description,
+                    'pdf_url' => $doc->pdf_url,
+                    'created_at' => $doc->created_at->toISOString(),
+                ];
+            });
+
+        return response()->json($documentations);
     }
 
     public function contact(Request $request)

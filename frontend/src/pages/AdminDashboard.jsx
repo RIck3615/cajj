@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LogOut, Plus, Trash2, Edit, Image, Video, Newspaper, BookOpen, Users, Target } from "lucide-react";
+import { LogOut, Plus, Trash2, Edit, Image, Video, Newspaper, BookOpen, Users, Target, FileText, Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +44,13 @@ import {
   getActions,
   updateAction,
 } from "@/services/admin";
+import {
+  getDocumentations,
+  createDocumentation,
+  updateDocumentation,
+  deleteDocumentation,
+  toggleDocumentationVisibility,
+} from "@/services/admin";
 
 import { API_URL } from "@/services/api";
 
@@ -56,6 +63,7 @@ const AdminDashboard = () => {
   const [publications, setPublications] = useState({ cajj: [], partners: [] });
   const [about, setAbout] = useState({ sections: [] });
   const [actions, setActions] = useState([]);
+  const [documentations, setDocumentations] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -83,6 +91,9 @@ const AdminDashboard = () => {
       } else if (activeTab === "actions") {
         const res = await getActions();
         setActions(res.data);
+      } else if (activeTab === "documentations") {
+        const res = await getDocumentations();
+        setDocumentations(res.data);
       }
     } catch (err) {
       console.error("Erreur chargement données:", err);
@@ -168,6 +179,16 @@ const AdminDashboard = () => {
             <Target className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
             Actions
           </Button>
+          <Button
+            variant={activeTab === "documentations" ? "default" : "ghost"}
+            onClick={() => setActiveTab("documentations")}
+            className="rounded-b-none whitespace-nowrap text-xs sm:text-sm"
+            size="sm"
+          >
+            <FileText className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Documentation</span>
+            <span className="sm:hidden">Doc</span>
+          </Button>
         </div>
 
         {activeTab === "news" && (
@@ -187,6 +208,9 @@ const AdminDashboard = () => {
         )}
         {activeTab === "actions" && (
           <ActionsManager actions={actions} onRefresh={loadData} loading={loading} />
+        )}
+        {activeTab === "documentations" && (
+          <DocumentationsManager documentations={documentations} onRefresh={loadData} loading={loading} />
         )}
       </div>
     </div>
@@ -209,7 +233,7 @@ const NewsManager = ({ news, onRefresh, loading }) => {
       title: item.title, 
       content: item.content, 
       author: item.author || "CAJJ",
-      media: null 
+      media: null
     });
     setRemoveExistingMedia(false);
     // Si l'item a un média existant, l'afficher en preview
@@ -416,6 +440,7 @@ const NewsManager = ({ news, onRefresh, loading }) => {
                   ) : null}
                 </div>
               )}
+              
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                   {submitting ? "Enregistrement..." : "Enregistrer"}
@@ -1198,7 +1223,7 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
       if (editingId && removeExistingMedia && !formData.media) {
         data.append('remove_media', '1');
       }
-
+      
       if (editingId) {
         await updatePublication(activeType, editingId, data);
       } else {
@@ -1363,6 +1388,7 @@ const PublicationsManager = ({ publications, onRefresh, loading }) => {
                   ) : null}
                 </div>
               )}
+              
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
                   {submitting ? "Enregistrement..." : editingId ? "Modifier" : "Enregistrer"}
@@ -1728,6 +1754,318 @@ const AboutManager = ({ about, onRefresh, loading }) => {
               </CardHeader>
             </Card>
           ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Composant gestion documentation
+const DocumentationsManager = ({ documentations, onRefresh, loading }) => {
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState({ title: "", description: "", pdf: null });
+  const [submitting, setSubmitting] = useState(false);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
+  const [removeExistingPdf, setRemoveExistingPdf] = useState(false);
+
+  const handleEdit = (item) => {
+    setEditingId(item.id);
+    setFormData({
+      title: item.title || "",
+      description: item.description || "",
+      pdf: null,
+    });
+    setRemoveExistingPdf(false);
+    // Si l'item a un PDF existant, l'afficher en preview
+    if (item.pdf_url) {
+      const currentUrl = window.location.origin;
+      let pdfUrl = item.pdf_url;
+      if (item.pdf_url.startsWith("/storage/")) {
+        if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+          pdfUrl = `${currentUrl}/api/public${item.pdf_url}`;
+        } else {
+          const API_URL = window.location.origin + "/api";
+          pdfUrl = `${API_URL}${item.pdf_url}`;
+        }
+      }
+      setPreviewPdfUrl(pdfUrl);
+    } else {
+      setPreviewPdfUrl(null);
+    }
+    setShowForm(true);
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setFormData({ title: "", description: "", pdf: null });
+    setPreviewPdfUrl(null);
+    setRemoveExistingPdf(false);
+    setShowForm(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const data = new FormData();
+      data.append('title', formData.title);
+      data.append('description', formData.description || '');
+      
+      if (formData.pdf) {
+        data.append('pdf', formData.pdf);
+      }
+      
+      // Si on est en mode édition et qu'on veut supprimer le PDF existant
+      if (editingId && removeExistingPdf && !formData.pdf) {
+        data.append('remove_pdf', '1');
+      }
+      
+      if (editingId) {
+        await updateDocumentation(editingId, data);
+      } else {
+        await createDocumentation(data);
+      }
+      handleCancel();
+      onRefresh();
+    } catch (err) {
+      alert("Erreur: " + (err.response?.data?.error || "Erreur inconnue"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette documentation ?")) {
+      return;
+    }
+    try {
+      await deleteDocumentation(id);
+      onRefresh();
+    } catch (err) {
+      alert("Erreur: " + (err.response?.data?.error || "Erreur inconnue"));
+    }
+  };
+
+  const handleToggleVisibility = async (id, currentVisible) => {
+    try {
+      await toggleDocumentationVisibility(id, !currentVisible);
+      onRefresh();
+    } catch (err) {
+      alert("Erreur: " + (err.response?.data?.error || "Erreur inconnue"));
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xl font-semibold sm:text-2xl">Gestion de la documentation</h2>
+        <Button onClick={() => setShowForm(!showForm)} size="sm" className="w-full sm:w-auto">
+          <Plus className="mr-2 h-4 w-4" />
+          Ajouter
+        </Button>
+      </div>
+
+      {showForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{editingId ? "Modifier la documentation" : "Nouvelle documentation"}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Titre</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+                  rows={3}
+                />
+              </div>
+              
+              {/* Section PDF */}
+              <div className="border-t border-border pt-4 mt-4">
+                <h3 className="text-sm font-semibold mb-3">Fichier PDF {!editingId && "(requis)"}</h3>
+                <div>
+                  <label className="text-sm font-medium">Télécharger un fichier PDF</label>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setFormData({ ...formData, pdf: file });
+                        setRemoveExistingPdf(false);
+                        const url = URL.createObjectURL(file);
+                        setPreviewPdfUrl(url);
+                      }
+                    }}
+                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+                    required={!editingId}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Format accepté: PDF (max 100MB)
+                  </p>
+                </div>
+                {previewPdfUrl && (
+                  <div className="space-y-2 mt-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">PDF sélectionné</label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setFormData({ ...formData, pdf: null });
+                          if (editingId && previewPdfUrl && !previewPdfUrl.startsWith('blob:')) {
+                            setRemoveExistingPdf(true);
+                            setPreviewPdfUrl(null);
+                          } else {
+                            setPreviewPdfUrl(null);
+                            setRemoveExistingPdf(false);
+                          }
+                        }}
+                        className="text-destructive"
+                      >
+                        Supprimer
+                      </Button>
+                    </div>
+                    {previewPdfUrl.startsWith('blob:') ? (
+                      <p className="text-sm text-muted-foreground p-2 border rounded">
+                        Fichier sélectionné (prêt à être uploadé)
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        <a
+                          href={previewPdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline flex items-center gap-2"
+                        >
+                          <FileText className="h-4 w-4" />
+                          Voir le PDF actuel
+                        </a>
+                        <iframe
+                          src={`${previewPdfUrl}#toolbar=1`}
+                          className="w-full border rounded"
+                          style={{ height: "400px" }}
+                          title="Aperçu PDF"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
+                  {submitting ? "Enregistrement..." : editingId ? "Modifier" : "Enregistrer"}
+                </Button>
+                <Button type="button" variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
+                  Annuler
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {loading ? (
+        <p className="text-center text-muted-foreground">Chargement...</p>
+      ) : documentations.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            Aucune documentation pour le moment
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {documentations.map((doc) => {
+            const pdfUrl = doc.pdf_url ? (() => {
+              const currentUrl = window.location.origin;
+              if (doc.pdf_url.startsWith("/storage/")) {
+                if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                  return `${currentUrl}/api/public${doc.pdf_url}`;
+                } else {
+                  return `${window.location.origin}/api${doc.pdf_url}`;
+                }
+              }
+              return doc.pdf_url;
+            })() : null;
+            
+            return (
+              <Card key={doc.id} className="border-border/60 overflow-hidden">
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{doc.title}</CardTitle>
+                      {doc.description && (
+                        <CardDescription className="line-clamp-2 mt-1">
+                          {doc.description}
+                        </CardDescription>
+                      )}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(doc)}
+                        title="Modifier"
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleVisibility(doc.id, doc.visible)}
+                        className={`h-8 w-8 p-0 ${doc.visible ? "text-green-600" : "text-muted-foreground"}`}
+                        title={doc.visible ? "Masquer" : "Publier"}
+                      >
+                        {doc.visible ? "👁️" : "👁️‍🗨️"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(doc.id)}
+                        className="h-8 w-8 p-0 text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {pdfUrl && (
+                    <div className="space-y-2">
+                      <iframe
+                        src={`${pdfUrl}#toolbar=0`}
+                        className="w-full border rounded"
+                        style={{ height: "300px" }}
+                        title={`Aperçu ${doc.title}`}
+                      />
+                      <Button variant="outline" size="sm" className="w-full" asChild>
+                        <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
+                          <FileText className="mr-2 h-4 w-4" />
+                          Ouvrir le PDF
+                        </a>
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

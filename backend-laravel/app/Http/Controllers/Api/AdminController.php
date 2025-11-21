@@ -12,6 +12,7 @@ use App\Models\Video;
 use App\Models\Publication;
 use App\Models\AboutSection;
 use App\Models\Action;
+use App\Models\Documentation;
 
 class AdminController extends Controller
 {
@@ -158,10 +159,12 @@ class AdminController extends Controller
                 'author' => 'nullable|string',
                 'date' => 'nullable|date',
                 'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
+                'pdf' => 'nullable|file|mimes:pdf|max:102400', // 100MB
             ]);
 
             $mediaUrl = null;
             $mediaType = null;
+            $pdfUrl = null;
 
             // Gérer l'upload du média (image ou vidéo)
             if ($request->hasFile('media')) {
@@ -186,6 +189,20 @@ class AdminController extends Controller
                 }
             }
 
+            // Gérer l'upload du PDF
+            if ($request->hasFile('pdf')) {
+                try {
+                    $pdfFile = $request->file('pdf');
+                    $pdfUrl = $this->uploadFile($pdfFile, 'pdfs');
+                } catch (\Exception $e) {
+                    \Log::error('Erreur upload PDF news: ' . $e->getMessage());
+                    return response()->json([
+                        'error' => 'Erreur lors de l\'upload du PDF',
+                        'message' => $e->getMessage()
+                    ], 500);
+                }
+            }
+
             $news = News::create([
                 'title' => $request->title,
                 'content' => $request->content,
@@ -194,6 +211,7 @@ class AdminController extends Controller
                 'visible' => true,
                 'media_url' => $mediaUrl,
                 'media_type' => $mediaType,
+                'pdf_url' => $pdfUrl,
             ]);
 
             return response()->json(['message' => 'Actualité ajoutée', 'news' => $news]);
@@ -220,6 +238,8 @@ class AdminController extends Controller
                 'date' => 'nullable|date',
                 'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
                 'remove_media' => 'nullable|boolean',
+                'pdf' => 'nullable|file|mimes:pdf|max:102400', // 100MB
+                'remove_pdf' => 'nullable|boolean',
             ]);
 
             $updateData = $request->only(['title', 'content', 'author', 'date', 'visible']);
@@ -263,6 +283,40 @@ class AdminController extends Controller
                     \Log::error('Erreur upload média news update: ' . $e->getMessage());
                     return response()->json([
                         'error' => 'Erreur lors de l\'upload du fichier',
+                        'message' => $e->getMessage()
+                    ], 500);
+                }
+            }
+
+            // Gérer la suppression du PDF
+            if ($request->input('remove_pdf', false)) {
+                // Supprimer l'ancien fichier PDF s'il existe
+                if ($news->pdf_url) {
+                    $oldPath = str_replace('/storage/', '', $news->pdf_url);
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
+                }
+                $updateData['pdf_url'] = null;
+            }
+
+            // Gérer l'upload d'un nouveau PDF
+            if ($request->hasFile('pdf')) {
+                try {
+                    // Supprimer l'ancien fichier PDF s'il existe
+                    if ($news->pdf_url) {
+                        $oldPath = str_replace('/storage/', '', $news->pdf_url);
+                        if (Storage::disk('public')->exists($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
+                        }
+                    }
+
+                    $pdfFile = $request->file('pdf');
+                    $updateData['pdf_url'] = $this->uploadFile($pdfFile, 'pdfs');
+                } catch (\Exception $e) {
+                    \Log::error('Erreur upload PDF news update: ' . $e->getMessage());
+                    return response()->json([
+                        'error' => 'Erreur lors de l\'upload du PDF',
                         'message' => $e->getMessage()
                     ], 500);
                 }
@@ -494,6 +548,7 @@ class AdminController extends Controller
                     'description' => 'nullable|string',
                     'url' => 'nullable|url',
                     'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
+                    'pdf' => 'nullable|file|mimes:pdf|max:102400', // 100MB
                 ]);
             } else {
                 $request->validate([
@@ -501,11 +556,13 @@ class AdminController extends Controller
                     'description' => 'nullable|string',
                     'url' => 'nullable|url',
                     'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
+                    'pdf' => 'nullable|file|mimes:pdf|max:102400', // 100MB
                 ]);
             }
 
             $mediaUrl = null;
             $mediaType = null;
+            $pdfUrl = null;
 
             // Gérer l'upload du média (image ou vidéo)
             if ($request->hasFile('media')) {
@@ -530,6 +587,20 @@ class AdminController extends Controller
                 }
             }
 
+            // Gérer l'upload du PDF
+            if ($request->hasFile('pdf')) {
+                try {
+                    $pdfFile = $request->file('pdf');
+                    $pdfUrl = $this->uploadFile($pdfFile, 'pdfs');
+                } catch (\Exception $e) {
+                    Log::error('Erreur upload PDF publication: ' . $e->getMessage());
+                    return response()->json([
+                        'error' => 'Erreur lors de l\'upload du PDF',
+                        'message' => $e->getMessage()
+                    ], 500);
+                }
+            }
+
             $publication = Publication::create([
                 'type' => $type,
                 'title' => $request->title ?? null,
@@ -539,6 +610,7 @@ class AdminController extends Controller
                 'visible' => true,
                 'media_url' => $mediaUrl,
                 'media_type' => $mediaType,
+                'pdf_url' => $pdfUrl,
             ]);
 
             return response()->json(['message' => 'Publication ajoutée', 'publication' => $publication]);
@@ -574,6 +646,8 @@ class AdminController extends Controller
                     'url' => 'nullable|url',
                     'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
                     'remove_media' => 'nullable|boolean',
+                    'pdf' => 'nullable|file|mimes:pdf|max:102400', // 100MB
+                    'remove_pdf' => 'nullable|boolean',
                 ]);
             } else {
                 $request->validate([
@@ -582,6 +656,8 @@ class AdminController extends Controller
                     'url' => 'nullable|url',
                     'media' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov,wmv|max:102400', // 100MB
                     'remove_media' => 'nullable|boolean',
+                    'pdf' => 'nullable|file|mimes:pdf|max:102400', // 100MB
+                    'remove_pdf' => 'nullable|boolean',
                 ]);
             }
 
@@ -626,6 +702,40 @@ class AdminController extends Controller
                     \Log::error('Erreur upload média publication update: ' . $e->getMessage());
                     return response()->json([
                         'error' => 'Erreur lors de l\'upload du fichier',
+                        'message' => $e->getMessage()
+                    ], 500);
+                }
+            }
+
+            // Gérer la suppression du PDF
+            if ($request->input('remove_pdf', false)) {
+                // Supprimer l'ancien fichier PDF s'il existe
+                if ($publication->pdf_url) {
+                    $oldPath = str_replace('/storage/', '', $publication->pdf_url);
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
+                }
+                $updateData['pdf_url'] = null;
+            }
+
+            // Gérer l'upload d'un nouveau PDF
+            if ($request->hasFile('pdf')) {
+                try {
+                    // Supprimer l'ancien fichier PDF s'il existe
+                    if ($publication->pdf_url) {
+                        $oldPath = str_replace('/storage/', '', $publication->pdf_url);
+                        if (Storage::disk('public')->exists($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
+                        }
+                    }
+
+                    $pdfFile = $request->file('pdf');
+                    $updateData['pdf_url'] = $this->uploadFile($pdfFile, 'pdfs');
+                } catch (\Exception $e) {
+                    \Log::error('Erreur upload PDF publication update: ' . $e->getMessage());
+                    return response()->json([
+                        'error' => 'Erreur lors de l\'upload du PDF',
                         'message' => $e->getMessage()
                     ], 500);
                 }
@@ -734,6 +844,149 @@ class AdminController extends Controller
         return response()->json([
             'message' => 'Action mise à jour',
             'action' => $action,
+        ]);
+    }
+
+    // ========== DOCUMENTATION ==========
+
+    public function getDocumentations()
+    {
+        $documentations = Documentation::orderBy('created_at', 'desc')->get();
+        return response()->json($documentations);
+    }
+
+    public function createDocumentation(Request $request)
+    {
+        try {
+            $request->validate([
+                'title' => 'required|string',
+                'description' => 'nullable|string',
+                'pdf' => 'required|file|mimes:pdf|max:102400', // 100MB
+            ]);
+
+            $pdfUrl = null;
+
+            // Gérer l'upload du PDF
+            if ($request->hasFile('pdf')) {
+                try {
+                    $pdfFile = $request->file('pdf');
+                    $pdfUrl = $this->uploadFile($pdfFile, 'pdfs');
+                } catch (\Exception $e) {
+                    \Log::error('Erreur upload PDF documentation: ' . $e->getMessage());
+                    return response()->json([
+                        'error' => 'Erreur lors de l\'upload du PDF',
+                        'message' => $e->getMessage()
+                    ], 500);
+                }
+            }
+
+            $documentation = Documentation::create([
+                'title' => $request->title,
+                'description' => $request->description ?? null,
+                'pdf_url' => $pdfUrl,
+                'visible' => true,
+            ]);
+
+            return response()->json(['message' => 'Documentation ajoutée', 'documentation' => $documentation]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Erreur de validation', 'details' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Erreur createDocumentation: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Erreur lors de la création de la documentation',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateDocumentation(Request $request, $id)
+    {
+        try {
+            $documentation = Documentation::findOrFail($id);
+
+            $request->validate([
+                'title' => 'sometimes|required|string',
+                'description' => 'nullable|string',
+                'pdf' => 'nullable|file|mimes:pdf|max:102400', // 100MB
+                'remove_pdf' => 'nullable|boolean',
+            ]);
+
+            $updateData = $request->only(['title', 'description', 'visible']);
+
+            // Gérer la suppression du PDF
+            if ($request->input('remove_pdf', false)) {
+                // Supprimer l'ancien fichier PDF s'il existe
+                if ($documentation->pdf_url) {
+                    $oldPath = str_replace('/storage/', '', $documentation->pdf_url);
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
+                }
+                $updateData['pdf_url'] = null;
+            }
+
+            // Gérer l'upload d'un nouveau PDF
+            if ($request->hasFile('pdf')) {
+                try {
+                    // Supprimer l'ancien fichier PDF s'il existe
+                    if ($documentation->pdf_url) {
+                        $oldPath = str_replace('/storage/', '', $documentation->pdf_url);
+                        if (Storage::disk('public')->exists($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
+                        }
+                    }
+
+                    $pdfFile = $request->file('pdf');
+                    $updateData['pdf_url'] = $this->uploadFile($pdfFile, 'pdfs');
+                } catch (\Exception $e) {
+                    \Log::error('Erreur upload PDF documentation update: ' . $e->getMessage());
+                    return response()->json([
+                        'error' => 'Erreur lors de l\'upload du PDF',
+                        'message' => $e->getMessage()
+                    ], 500);
+                }
+            }
+
+            $documentation->update($updateData);
+
+            return response()->json(['message' => 'Documentation mise à jour', 'documentation' => $documentation]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Erreur de validation', 'details' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Erreur updateDocumentation: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Erreur lors de la mise à jour de la documentation',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteDocumentation($id)
+    {
+        $documentation = Documentation::findOrFail($id);
+
+        // Supprimer le fichier PDF s'il existe
+        if ($documentation->pdf_url) {
+            $oldPath = str_replace('/storage/', '', $documentation->pdf_url);
+            if (Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
+        }
+
+        $documentation->delete();
+
+        return response()->json(['message' => 'Documentation supprimée']);
+    }
+
+    public function toggleDocumentationVisibility(Request $request, $id)
+    {
+        $documentation = Documentation::findOrFail($id);
+        $documentation->visible = $request->input('visible', true);
+        $documentation->save();
+
+        return response()->json([
+            'message' => $documentation->visible ? 'Documentation publiée' : 'Documentation masquée',
+            'documentation' => $documentation,
         ]);
     }
 }

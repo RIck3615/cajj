@@ -85,3 +85,29 @@ export const updateAboutSection = (id, data) => api.put(`/admin/about/sections/$
 export const getActions = () => api.get("/admin/actions");
 export const updateAction = (id, data) => api.put(`/admin/actions/${id}`, data);
 
+// Documentation
+export const getDocumentations = () => api.get("/admin/documentations");
+export const createDocumentation = (data) => {
+  if (data instanceof FormData) {
+    return api.post("/admin/documentations", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 300000, // 5 minutes pour les uploads de fichiers
+    });
+  }
+  return api.post("/admin/documentations", data);
+};
+export const updateDocumentation = (id, data) => {
+  if (data instanceof FormData) {
+    // Pour FormData avec PUT, utiliser POST avec _method=PUT
+    data.append('_method', 'PUT');
+    return api.post(`/admin/documentations/${id}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 300000, // 5 minutes pour les uploads de fichiers
+    });
+  }
+  return api.put(`/admin/documentations/${id}`, data);
+};
+export const deleteDocumentation = (id) => api.delete(`/admin/documentations/${id}`);
+export const toggleDocumentationVisibility = (id, visible) =>
+  api.patch(`/admin/documentations/${id}/visibility`, { visible });
+

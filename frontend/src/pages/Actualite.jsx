@@ -144,6 +144,31 @@ const Actualite = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground whitespace-pre-line line-clamp-4">{item.content}</p>
+                  {item.pdf_url && (
+                    <div className="mt-4">
+                      <a
+                        href={(() => {
+                          const currentUrl = window.location.origin;
+                          if (item.pdf_url.startsWith("/storage/")) {
+                            if (currentUrl.includes("hostinger") || currentUrl.includes("hostingersite.com") || currentUrl.includes("cajjrdc.com")) {
+                              return `${currentUrl}/api/public${item.pdf_url}`;
+                            } else {
+                              return `${window.location.origin}/api${item.pdf_url}`;
+                            }
+                          }
+                          return item.pdf_url;
+                        })()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-2 text-sm text-primary hover:underline"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        Télécharger le PDF
+                      </a>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

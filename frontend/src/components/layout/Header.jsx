@@ -9,10 +9,11 @@ import Logo from "@/components/branding/Logo";
 const navItems = [
   { to: "/", label: "Accueil" },
   { to: "/nous-connaitre", label: "Nous connaître" },
-  { to: "/domaine", label: "Domaine d’intervention" },
+  { to: "/domaine", label: "Domaine d'intervention" },
   { to: "/publications", label: "Publications" },
   { to: "/actualite", label: "Actualité" },
   { to: "/galerie", label: "Galerie" },
+  { to: "/documentation", label: "Documentation" },
 ];
 
 const Header = () => {
